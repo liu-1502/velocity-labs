@@ -7071,9 +7071,20 @@ em {
   corners, which is also why the gradient no longer needs to spill past the
   block to hide its own edge.
 */
+/*
+  Square corners, like the closing panel on the home page.
+
+  It carried a 24px radius, which made it a CARD — an object sitting on the
+  page with air around it. The home page's contact panel is the same gesture
+  one level up and it is square, so the two were telling the reader different
+  things about what kind of surface a closing invitation is.
+
+  `overflow: hidden` stays. The tint and the grain below are `inset: 0`
+  pseudo-elements and the clip is what keeps them inside the box at all, radius
+  or no radius.
+*/
 .cs-cta {
   position: relative;
-  /* Clips the tinted fill below to the 24px corner. */
   overflow: hidden;
   margin-top: 72px;
   padding: 80px 32px;
@@ -7083,7 +7094,7 @@ em {
     edge too many.
   */
   border: 0;
-  border-radius: 24px;
+  border-radius: 0;
   text-align: center;
 }
 
