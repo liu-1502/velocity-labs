@@ -9,9 +9,9 @@ export const siteConfig = {
   name: 'Velocity Labs',
   /** Rendered in the header as "velocity" + accent dot + "labs". */
   wordmark: { first: 'velocity', second: 'labs' },
-  title: 'Velocity Labs — Engineered for Outcomes',
+  title: 'Velocity Labs - Engineered for Outcomes',
   description:
-    'Founders building alongside founders — from architecture to launch. A results-driven product studio shipping fintech, gaming and web3 platforms.',
+    'Founders building alongside founders - from architecture to launch. A results-driven product studio shipping fintech, gaming and web3 platforms.',
   url: process.env.NEXT_PUBLIC_SITE_URL ?? 'https://velocity-labs.tech',
   email: process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? 'hello@velocity-labs.tech',
   locale: 'en_US',

@@ -100,22 +100,22 @@ export const caseStudies: CaseStudy[] = [
       shots: [
         {
           src: '/assets/work/novaland/home.webp',
-          alt: 'App home — points balance, the six service categories, and the offers and rewards rails below them',
+          alt: 'App home - points balance, the six service categories, and the offers and rewards rails below them',
           ratio: '923 / 2000',
         },
         {
           src: '/assets/work/novaland/entertainment.webp',
-          alt: 'Entertainment brand page — Nova Dreams with its offers tab and the information tab behind it',
+          alt: 'Entertainment brand page - Nova Dreams with its offers tab and the information tab behind it',
           ratio: '923 / 2000',
         },
         {
           src: '/assets/work/novaland/account.webp',
-          alt: 'Account — membership tier with points to the next rank, above settings, FAQ and support',
+          alt: 'Account - membership tier with points to the next rank, above settings, FAQ and support',
           ratio: '923 / 2000',
         },
         {
           src: '/assets/work/novaland/redeem.webp',
-          alt: 'Redemption — points detail with its transaction record, and the QR code a cashier scans',
+          alt: 'Redemption - points detail with its transaction record, and the QR code a cashier scans',
           ratio: '923 / 2000',
         },
       ],
@@ -128,7 +128,7 @@ export const caseStudies: CaseStudy[] = [
   {
     slug: 'btse',
     summary:
-      'Back-office tooling and the data pipelines underneath it for a global crypto exchange — the part of an exchange its customers never see and its finance team lives in.',
+      'Back-office tooling and the data pipelines underneath it for a global crypto exchange - the part of an exchange its customers never see and its finance team lives in.',
     facts: [
       { label: 'Client', value: 'BTSE' },
       { label: 'Sector', value: 'Crypto exchange' },
@@ -137,24 +137,24 @@ export const caseStudies: CaseStudy[] = [
     ],
     brief: [
       'An exchange settling institutional clients has to answer one question every month, per client, without argument: what is owed, and how was it worked out. BTSE was answering it in spreadsheets assembled by hand from several systems.',
-      'We built the invoicing side of the back office — client and fee configuration, a calculation that shows its own working line by line, and a settlement summary a client can be sent as it stands.',
+      'We built the invoicing side of the back office - client and fee configuration, a calculation that shows its own working line by line, and a settlement summary a client can be sent as it stands.',
     ],
     build: {
       lede: 'Invoice management, fee configuration, and the breakdown that explains a settlement.',
       shots: [
         {
           src: '/assets/work/btse/client-configs.webp',
-          alt: 'Client config for Nimbus Exchange — fixed fees, maker/taker tiers, isolated markets, and a quick preview of the net settle amount',
+          alt: 'Client config for Nimbus Exchange - fixed fees, maker/taker tiers, isolated markets, and a quick preview of the net settle amount',
           ratio: '2000 / 1250',
         },
         {
           src: '/assets/work/btse/clients.webp',
-          alt: 'Client management — searchable list of clients with code, alias, nature, contract start and status',
+          alt: 'Client management - searchable list of clients with code, alias, nature, contract start and status',
           ratio: '2000 / 1250',
         },
         {
           src: '/assets/work/btse/invoice-breakdown.webp',
-          alt: 'Invoice calculation breakdown — settlement summary and the detailed trading service fee working',
+          alt: 'Invoice calculation breakdown - settlement summary and the detailed trading service fee working',
           ratio: '2000 / 1250',
         },
       ],
@@ -167,7 +167,7 @@ export const caseStudies: CaseStudy[] = [
   {
     slug: 'yuzu',
     summary:
-      'End-to-end Web3 architecture — front end, back end, infrastructure and smart contracts — for a platform curating on-chain structured products.',
+      'End-to-end Web3 architecture - front end, back end, infrastructure and smart contracts - for a platform curating on-chain structured products.',
     facts: [
       { label: 'Client', value: 'Yuzu Money' },
       { label: 'Sector', value: 'Fintech · Web3' },
@@ -176,7 +176,7 @@ export const caseStudies: CaseStudy[] = [
     ],
     brief: [
       'Yuzu packages on-chain structured products for people who want the yield without running the positions themselves. That means the hard parts are all on the same side of the line: the contracts that hold the money, the infrastructure that watches them, and an interface that has to make both legible.',
-      'We took the whole stack, which is the only way the three stay consistent — a balance shown in the app is the balance the contract holds, and the history behind it reconciles.',
+      'We took the whole stack, which is the only way the three stay consistent - a balance shown in the app is the balance the contract holds, and the history behind it reconciles.',
     ],
     build: {
       lede: 'The member dashboard, the earn flow, and the transaction history behind both.',
@@ -189,17 +189,17 @@ export const caseStudies: CaseStudy[] = [
       shots: [
         {
           src: '/assets/work/yuzu/dashboard.webp',
-          alt: 'Member dashboard — total balance, savings and interest earned above a growth chart and recent activity',
+          alt: 'Member dashboard - total balance, savings and interest earned above a growth chart and recent activity',
           ratio: '2000 / 1422',
         },
         {
           src: '/assets/work/yuzu/earn.webp',
-          alt: 'Earn — global metrics beside the USDC to syzUSD conversion panel',
+          alt: 'Earn - global metrics beside the USDC to syzUSD conversion panel',
           ratio: '2000 / 1422',
         },
         {
           src: '/assets/work/yuzu/transaction-history.png',
-          alt: 'Transaction history — earnings tab listing stakes and redemptions with amount, fee and status',
+          alt: 'Transaction history - earnings tab listing stakes and redemptions with amount, fee and status',
           ratio: '2000 / 1422',
           /*
             Same story as `portfolio.png` on Digital Collectibles, and the same
@@ -226,22 +226,22 @@ export const caseStudies: CaseStudy[] = [
       mobile: [
         {
           src: '/assets/work/yuzu/app-home.webp',
-          alt: 'App home — total balance, savings and interest earned above the earn shortcut and recent activity',
+          alt: 'App home - total balance, savings and interest earned above the earn shortcut and recent activity',
           ratio: '923 / 2000',
         },
         {
           src: '/assets/work/yuzu/app-deposit.webp',
-          alt: 'Deposit — adding funds and the deposit screen beside it',
+          alt: 'Deposit - adding funds and the deposit screen beside it',
           ratio: '923 / 2000',
         },
         {
           src: '/assets/work/yuzu/app-deposit-address.webp',
-          alt: 'Deposit address — Bitcoin QR code with the address, minimum deposit and confirmation thresholds',
+          alt: 'Deposit address - Bitcoin QR code with the address, minimum deposit and confirmation thresholds',
           ratio: '923 / 2000',
         },
         {
           src: '/assets/work/yuzu/app-earn.webp',
-          alt: 'Earn — total earnings over fixed and flexible plans for USDT, BTC and ETH',
+          alt: 'Earn - total earnings over fixed and flexible plans for USDT, BTC and ETH',
           ratio: '923 / 2000',
         },
       ],
@@ -263,7 +263,7 @@ export const caseStudies: CaseStudy[] = [
     ],
     brief: [
       'A telesales floor is bottlenecked on the seconds between calls. Every one spent finding the next number, waiting for a dial tone, or writing a note into a second system is a call not made.',
-      'We built the agent portal around that: batch dialling, call routing, answering-machine detection, and call notes saved on hangup — so an agent moves to the next conversation without leaving the screen.',
+      'We built the agent portal around that: batch dialling, call routing, answering-machine detection, and call notes saved on hangup - so an agent moves to the next conversation without leaving the screen.',
     ],
     build: {
       lede: 'The agent portal, the dialler, and the supervisor view over the queue.',
@@ -271,17 +271,17 @@ export const caseStudies: CaseStudy[] = [
       shots: [
         {
           src: '/assets/work/telesales-sip/dashboard.webp',
-          alt: 'Agent portal home — five active channels with auto-dial on, beside a queue of 54 pending numbers',
+          alt: 'Agent portal home - five active channels with auto-dial on, beside a queue of 54 pending numbers',
           ratio: '2000 / 1250',
         },
         {
           src: '/assets/work/telesales-sip/contacts.webp',
-          alt: 'Contacts — 140 numbers with the outcome of the last call on each and a one-tap dial',
+          alt: 'Contacts - 140 numbers with the outcome of the last call on each and a one-tap dial',
           ratio: '2000 / 1250',
         },
         {
           src: '/assets/work/telesales-sip/history.webp',
-          alt: 'Call history — total calls, contact rate and voicemails over a log of every call with its outcome and duration',
+          alt: 'Call history - total calls, contact rate and voicemails over a log of every call with its outcome and duration',
           ratio: '2000 / 1250',
         },
       ],
@@ -294,7 +294,7 @@ export const caseStudies: CaseStudy[] = [
   {
     slug: 'digital-collectibles',
     summary:
-      'A consumer marketplace for graded collectibles — browsing, trading, and a portfolio that values what you hold.',
+      'A consumer marketplace for graded collectibles - browsing, trading, and a portfolio that values what you hold.',
     facts: [
       { label: 'Sector', value: 'Web3 consumer' },
       { label: 'Scope', value: 'Marketplace · Trading · Portfolio' },
@@ -303,7 +303,7 @@ export const caseStudies: CaseStudy[] = [
     ],
     brief: [
       'Collectibles trade on condition, and condition is a grade. A marketplace that ignores it is a photo gallery with prices attached; one that respects it has to carry grade through search, listing, valuation and settlement without the collector having to think about it.',
-      'We built the consumer side — filtered browsing by grade, year and price, a portfolio that marks holdings to market, and the agent tooling that lets a dealer work on behalf of a buyer.',
+      'We built the consumer side - filtered browsing by grade, year and price, a portfolio that marks holdings to market, and the agent tooling that lets a dealer work on behalf of a buyer.',
     ],
     build: {
       lede: 'Marketplace, the listing page, and the portfolio behind them.',
@@ -328,17 +328,17 @@ export const caseStudies: CaseStudy[] = [
       shots: [
         {
           src: '/assets/work/digital-collectibles/marketplace.webp',
-          alt: 'Marketplace — hot deals above the full listing grid, with price, grade, year and expansion filters down the side',
+          alt: 'Marketplace - hot deals above the full listing grid, with price, grade, year and expansion filters down the side',
           ratio: '2000 / 1422',
         },
         {
           src: '/assets/work/digital-collectibles/listing.webp',
-          alt: 'Listing page — a graded card with its details, price history and related listings by grade',
+          alt: 'Listing page - a graded card with its details, price history and related listings by grade',
           ratio: '2000 / 1422',
         },
         {
           src: '/assets/work/digital-collectibles/portfolio.png',
-          alt: 'Portfolio — net value, gross assets and outstanding debt over the cash, margin and agent-credit accounts',
+          alt: 'Portfolio - net value, gross assets and outstanding debt over the cash, margin and agent-credit accounts',
           ratio: '2000 / 1422',
           fit: 'contain',
         },
@@ -352,7 +352,7 @@ export const caseStudies: CaseStudy[] = [
   {
     slug: 'poker',
     summary:
-      'Real-time multiplayer poker with matchmaking and tournament support — the latency-sensitive half of a gaming platform.',
+      'Real-time multiplayer poker with matchmaking and tournament support - the latency-sensitive half of a gaming platform.',
     facts: [
       { label: 'Sector', value: 'Real-time gaming' },
       { label: 'Scope', value: 'Game server · Matchmaking · Tournaments' },
@@ -380,17 +380,17 @@ export const caseStudies: CaseStudy[] = [
         },
         {
           src: '/assets/work/poker/table-ofc.png',
-          alt: 'Open-face Chinese table — both players\u2019 rows set, with the hand to sort along the bottom',
+          alt: 'Open-face Chinese table - both players\u2019 rows set, with the hand to sort along the bottom',
           ratio: '1145 / 2000',
         },
         {
           src: '/assets/work/poker/store.webp',
-          alt: 'Store — chip and gem packages under a promoted casino event',
+          alt: 'Store - chip and gem packages under a promoted casino event',
           ratio: '1145 / 2000',
         },
         {
           src: '/assets/work/poker/lobby.webp',
-          alt: 'Lobby — sit-and-go and friends play, with join and host as the two ways in',
+          alt: 'Lobby - sit-and-go and friends play, with join and host as the two ways in',
           ratio: '1145 / 2000',
         },
       ],

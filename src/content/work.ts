@@ -24,7 +24,7 @@ export const projects: Project[] = [
     logo: { src: '/assets/brand/novaland.png', alt: 'Novaland Group' },
     shot: {
       src: '/assets/work/novaland.webp',
-      alt: 'NovaService Loyalty app — entertainment deals, home, and account screens',
+      alt: 'NovaService Loyalty app - entertainment deals, home, and account screens',
     },
   },
   {
@@ -43,7 +43,7 @@ export const projects: Project[] = [
     logo: { src: '/assets/brand/btse-blue.png', alt: 'BTSE' },
     shot: {
       src: '/assets/work/btse.webp',
-      alt: 'BTSE Invoicing — client list, invoice calculation breakdown and settlement summary',
+      alt: 'BTSE Invoicing - client list, invoice calculation breakdown and settlement summary',
     },
   },
   {
@@ -69,7 +69,7 @@ export const projects: Project[] = [
     logo: { src: '/assets/brand/yuzu-icon.png', alt: 'Yuzu Money' },
     shot: {
       src: '/assets/work/yuzu.webp',
-      alt: 'Yuzu Money — the Yuzu mark over the dashboard: total balance, savings and a growth chart, with the transaction history and the Earn screen either side',
+      alt: 'Yuzu Money - the Yuzu mark over the dashboard: total balance, savings and a growth chart, with the transaction history and the Earn screen either side',
     },
   },
   {
@@ -109,7 +109,7 @@ export const projects: Project[] = [
       'Outbound telesales portal integrated with SIP trunk providers. Supports batch dialing, call routing, and agent management for high-volume sales teams.',
     shot: {
       src: '/assets/work/telesales-sip.webp',
-      alt: 'Telesales SIP agent portal — active call channels with auto-dial on and an upcoming queue of pending numbers',
+      alt: 'Telesales SIP agent portal - active call channels with auto-dial on and an upcoming queue of pending numbers',
     },
   },
   {
@@ -131,7 +131,7 @@ export const projects: Project[] = [
     description: 'Consumer-facing digital collectibles marketplace and trading platform.',
     shot: {
       src: '/assets/work/digital-collectibles.webp',
-      alt: 'My collectibles — graded-card marketplace with price and grade filters, a portfolio valuation, and the agent dashboard',
+      alt: 'My collectibles - graded-card marketplace with price and grade filters, a portfolio valuation, and the agent dashboard',
     },
   },
   {
@@ -148,7 +148,7 @@ export const projects: Project[] = [
     description: 'Real-time multiplayer poker with matchmaking and tournament support.',
     shot: {
       src: '/assets/work/poker.webp',
-      alt: 'Poker app — NLH and OFC tables, the lobby with sit-and-go and friends play, the chip store and the reward calendar',
+      alt: 'Poker app - NLH and OFC tables, the lobby with sit-and-go and friends play, the chip store and the reward calendar',
     },
   },
 ];

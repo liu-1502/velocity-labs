@@ -50,7 +50,7 @@ export const philosophyPillars: PhilosophyPillar[] = [
 export const philosophyIntro = {
   headlineLines: ['We work like the team that', '<mark>has to <em>live</em></mark> with the code'],
   lede: 'Six things we do on every project. Ask us to show you any of them before you sign anything.',
-  counter: '01 — 06',
+  counter: '01 - 06',
   standfirst:
     'Most of what goes wrong on an outsourced build goes wrong in the way of working, not the code.',
   aside:

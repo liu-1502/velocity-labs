@@ -112,7 +112,7 @@ export function CaseStudy({ study, project, next }: CaseStudyProps) {
         </Link>
 
         <Reveal as="span" className="kicker cs-kicker">
-          {project.number} — {project.domain}
+          {project.number} - {project.domain}
         </Reveal>
         <Reveal as="h1">{project.title}</Reveal>
         <Reveal as="p" className="lede cs-summary">
