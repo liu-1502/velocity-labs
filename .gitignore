@@ -39,6 +39,15 @@ yarn-error.log*
 !.vscode/extensions.json
 !.vscode/settings.json
 
-# heavy media pulled by `npm run assets:fetch`
-# (comment these out if you prefer to commit the video files)
-public/assets/video/*.mp4
+# The two hero/philosophy clips ARE committed — about 7 MB between them.
+#
+# They used to be ignored and pulled by `npm run assets:fetch`, which fetches
+# from https://velocity-labs-revamp.vercel.app — the deployment this project
+# exists to replace. That was fine while the only consumer was a developer
+# cloning the repo, and wrong the moment the site started building in CI: every
+# deploy would depend on someone else's site still being up, and the day it is
+# taken down the hero loses its video with no warning.
+#
+# 7 MB is nothing against GitHub's 100 MB per-file limit, and a repo that builds
+# from its own contents is worth far more than the space. `assets:fetch` still
+# works and is still how you refresh them from source.
