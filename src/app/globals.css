@@ -1,0 +1,1414 @@
+@import 'tailwindcss';
+
+/* ==========================================================================
+   Velocity Labs — Design Tokens
+   Single source of truth. Tailwind v4 reads @theme and generates utilities,
+   so `--color-accent` is usable as `bg-accent` / `text-accent` / `border-accent`.
+   Do not hardcode hex values in components — always reference a token.
+   ========================================================================== */
+
+@theme {
+  /* ---- Surfaces ---------------------------------------------------- */
+  /*
+    Every value below is a Tailwind default step, named in the comment. They are
+    written out rather than referenced as `var(--color-zinc-900)` because Tailwind
+    v4 tree-shakes theme variables that nothing uses — at runtime
+    `--color-zinc-900` resolves to nothing at all.
+  */
+  --color-bg: #09090b; /* zinc-950 */
+  --color-card: #18181b; /* zinc-900 */
+  --color-border: #27272a; /* zinc-800 */
+
+  /* ---- Foreground -------------------------------------------------- */
+  --color-fg: #fafafa; /* zinc-50 */
+  --color-muted: #a1a1aa; /* zinc-400 */
+
+  /* ---- Brand ------------------------------------------------------- */
+  /*
+    Emerald, not orange.
+
+    Chosen against measurements, not taste: the hero clip is 53% hue 195 and 34%
+    hue 210 — ice blue, sampled across nine frames — with the aurora green only
+    ~5% of pixels despite reading as the loudest thing in it. Emerald at hue ~158
+    sits between that aurora green and the ice, so it belongs to the clip without
+    competing with its dominant colour, which a cyan accent would.
+
+    Contrast beats what it replaces at BOTH ends: 10.35:1 on --bg against
+    orange-500's 7.10:1, and 1.25:1 over the brightest scrimmed snow against
+    orange's 1.17:1. That second figure is poor for every hue tried, orange
+    included — the accent is inherently weak over the clip's bright frames, which
+    is a property of the design, not of this colour.
+  */
+  /*
+    orange-500 / orange-400 — the pair the site started with, restored by choice.
+
+    Worth recording what the detour established, because the weakness that set it
+    off is real. All three columns below are measured against the CURRENT hero
+    scrim, 0.6 across the text band — earlier notes in this repo quoted numbers
+    taken at the old 0.356 scrim and are not comparable:
+
+                         on --bg   typical frame   brightest snow
+      orange-500 (this)     7.10            3.41             1.90
+      orange-400            8.79            4.23             2.35
+      #f28b65               8.20            3.94             2.19
+      #C2603A               4.76            2.29             1.27
+      emerald-400          10.35              —              2.77
+
+    orange-500 is the darkest of the set and sits last on every column, but the
+    gap is smaller than it looks: 3.41 on a typical frame is close to the 3:1 large
+    text threshold, and only the clip's bare-snow frames drop it to 1.90. Darkening
+    the scrim further would not help this particular hue — its lightness is near
+    enough to the scrimmed backdrop that contrast falls before it recovers.
+
+    Other pairs tried, if any is wanted back:
+      emerald   #34d399 / #6ee7b7   (emerald-400 / 300)
+      orange-400 #fb923c / #fdba74  (best measured contrast of the set)
+      terracotta #C2603A / #e47f59  and #f28b65 / #ff9e78 — both off-scale, and the
+                 lighter one's companion clipped sRGB, dragging its hue 40.8 → 42.0
+  */
+  /*
+    #e76018 was tried here and measured worse on every surface it is used on, so
+    this stays. Both were taken across all 47 accent-coloured text nodes on the
+    page, every one of which sits on the page's own rgb(9,9,11):
+
+                      as text on #09090b   over the hero clip
+      #f97316 (here)        7.10:1               3.06:1
+      #e76018               5.76:1               2.49:1   below the 3 it needs
+
+    The hero is where it decided. Both clear 4.5 as body text on the page, but
+    the headline's accent word sits over a bright clip, and holding 3:1 there
+    cost a 0.66 scrim with this orange against 0.75 with the darker one — so the
+    darker brand colour would also have dimmed the video by another sixth to
+    stay legible. See `.hero-scrim` in site.css for that working.
+  */
+  --color-accent: #f97316; /* orange-500 */
+  --color-accent-light: #fb923c; /* orange-400 */
+
+  /*
+    The original stylesheet also declares --garden-bg, --garden-soil,
+    --garden-soil-2, --leaf, --leaf-2, --bloom and --bloom-2. They are referenced
+    ZERO times anywhere — leftovers from an earlier design direction. --garden-bg
+    was carried over and then found to be unused here too; it also had no Tailwind
+    step (a green darker than emerald-950), so it is gone with the rest.
+    Re-add them here if that direction returns.
+  */
+
+  /* ---- Typography -------------------------------------------------- */
+  --font-sans: var(--font-inter), system-ui, sans-serif;
+  --font-display: var(--font-space-grotesk), var(--font-inter), sans-serif;
+
+  /* Fluid type scale — matches the production site at 1440px wide. */
+  --text-hero: clamp(2.75rem, 7.4vw, 6.6rem);
+  --text-hero--line-height: 0.98;
+  --text-hero--letter-spacing: -0.03em;
+
+  --text-h2: clamp(2rem, 3.9vw, 3.5rem);
+  --text-h2--line-height: 1.05;
+  --text-h2--letter-spacing: -0.025em;
+
+  --text-h3: 1.4rem;
+  --text-h3--line-height: 1.55;
+
+  --text-kicker: 0.72rem;
+  --text-kicker--line-height: 1.55;
+  --text-kicker--letter-spacing: 0.22em;
+
+  /* 1.18rem = the production 18.88px lede. */
+  --text-lede: clamp(1rem, 1.3vw, 1.18rem);
+  --text-lede--line-height: 1.55;
+
+  /* Hero subhead runs larger than a section lede — 22.4px in production. */
+  --text-hero-sub: clamp(1.05rem, 1.55vw, 1.4rem);
+  --text-hero-sub--line-height: 1.55;
+
+  /* ---- Layout ------------------------------------------------------ */
+  --spacing-gutter: 1.5rem;
+  --container-site: 1200px;
+
+  /* ---- Radii ------------------------------------------------------- */
+  --radius-card: 16px;
+  --radius-pill: 999px;
+
+  /* ---- Motion ------------------------------------------------------ */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out-soft: cubic-bezier(0.65, 0, 0.35, 1);
+
+  /* ---- Elevation --------------------------------------------------- */
+  --shadow-card: 0 1px 0 0 rgb(255 255 255 / 0.04) inset;
+  /*
+    --shadow-accent-glow was here with the accent baked into it. Nothing in the
+    project referenced it, and a dead token carrying a stale brand colour is how
+    the next colour change gets missed. Removed.
+  */
+}
+
+/* ==========================================================================
+   Base
+   ========================================================================== */
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  html {
+    /*
+      Deliberately NOT `scroll-behavior: smooth`. Lenis (see SmoothScroll.tsx)
+      owns scrolling and native smooth-scroll fights its interpolation —
+      anchors overshoot and jitter. Lenis is skipped under reduced-motion and
+      when JS is unavailable, where an instant jump is the correct fallback.
+    */
+    scroll-behavior: auto;
+    /*
+      No `scroll-padding-top` — production has none. Its anchors land 10px
+      below the viewport top (`lenis.scrollTo(el, { offset: -10 })`), which
+      means the fixed nav does overlap a section's first pixels. That is the
+      real behaviour, so it is the behaviour here. See SmoothScroll.tsx.
+    */
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--color-bg);
+    color: var(--color-fg);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    font-weight: 700;
+  }
+
+  /* Accent emphasis — `<em>` inside a heading is the brand highlight. */
+  h1 em,
+  h2 em,
+  h3 em {
+    font-style: normal;
+    color: var(--color-accent);
+  }
+
+  /* Warm near-black, not the page background — matches production. */
+  ::selection {
+    background-color: var(--color-accent);
+    color: #160a00;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+
+  /*
+    Deliberately NO custom scrollbar. Production leaves the OS scrollbar
+    alone, and a restyled 10px dark track is a visible difference on any
+    desktop browser that shows one.
+  */
+}
+
+/* ==========================================================================
+   Utilities
+   ========================================================================== */
+
+@layer utilities {
+  /* Subtle top-down vignette used over hero / contact video beds. */
+  .bg-scrim {
+    background: linear-gradient(
+      to bottom,
+      rgb(9 9 11 / 0.35) 0%,
+      rgb(9 9 11 / 0.55) 45%,
+      rgb(9 9 11 / 0.94) 100%
+    );
+  }
+
+  .bg-grid {
+    background-image:
+      linear-gradient(to right, rgb(255 255 255 / 0.03) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(255 255 255 / 0.03) 1px, transparent 1px);
+    background-size: 64px 64px;
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .text-pretty {
+    text-wrap: pretty;
+  }
+
+  /* Edge fade for marquees */
+  .mask-fade-x {
+    mask-image: linear-gradient(to right, transparent 0%, black 12%, black 88%, transparent 100%);
+  }
+}
+
+/* ==========================================================================
+   Keyframes
+   ========================================================================== */
+
+@keyframes marquee-x {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+/*
+  Philosophy labels drift 12px up and back over 6s. Each label starts at a
+  different offset (see `floatDelay` in content/philosophy.ts) so the group
+  never moves in lockstep.
+
+  The -50%/-50% is baked into every keyframe because the labels are centred
+  on their coordinate with the same transform — animating `transform` would
+  otherwise wipe out the centring.
+*/
+@keyframes float-label {
+  0%,
+  100% {
+    transform: translate(-50%, -50%);
+  }
+  50% {
+    transform: translate(-50%, calc(-50% - 12px));
+  }
+}
+
+/* ---- Track-record pillar visuals ---------------------------------- */
+/* All four are ports of the original `.pv-*` animations. */
+
+/* Slow rotation for the collectibles cube core. */
+@keyframes pv-spin {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Signal arcs pulsing out of the telesales handset. */
+@keyframes pv-signal {
+  0%,
+  100% {
+    opacity: 0.12;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* Yuzu mark drifting in a small orbit. */
+@keyframes pv-orbit {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(-4px, 5px);
+  }
+}
+
+/* Trend line drawing itself, holding, then resetting. */
+@keyframes pv-draw {
+  0% {
+    stroke-dashoffset: 320;
+  }
+  55% {
+    stroke-dashoffset: 0;
+  }
+  90% {
+    stroke-dashoffset: 0;
+  }
+  100% {
+    stroke-dashoffset: 320;
+  }
+}
+
+@keyframes pulse-ring {
+  0% {
+    transform: scale(0.85);
+    opacity: 0.7;
+  }
+  70% {
+    transform: scale(1.35);
+    opacity: 0;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* ==========================================================================
+   Accessibility — honour the OS "reduce motion" preference everywhere.
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ==========================================================================
+   Philosophy — editorial treatment
+   Paired with `components/sections/philosophy/Philosophy.tsx`.
+
+   Every colour, font and easing here is a token from @theme above. The only
+   literals are the plate's paper colour (it is a printed sheet, not a surface)
+   and the ink used for marks drawn ON that paper.
+   ========================================================================== */
+
+.phil {
+  padding-block: 56px 0;
+}
+
+/* Padding on the left only — the plate bleeds off the right edge. */
+/*
+  No max-width, and the gutter is the site's own `--pad-x`, not a private token.
+
+  Both were the same two faults site.css had already been cleared of: a 1460px cap
+  that centred itself, so the block's left edge drifted right of the header's on
+  wide screens; and a `--phil-gut` ladder (20/44/52/68/88) that had nothing to do
+  with `--pad-x`, leaving this heading 52px left of the wordmark at 1074px.
+
+  Still padding-left only — the plate is meant to bleed off the right edge.
+*/
+.phil-page {
+  padding-left: var(--pad-x);
+}
+
+/* ---- Heading ------------------------------------------------------------ */
+
+/*
+  The right gutter lives on the copy blocks, not on `.phil-page`.
+
+  `.phil-page` has no padding-right on purpose — the plate bleeds off that edge —
+  but that left the copy running to x=0 while the nav CTA and the hero buttons
+  stop 120px in. Only `.phil-stage` should reach the window; the
+  heading and the standfirst are body copy and line up with the rest of the site.
+
+  Below 900 the plate stops bleeding and `.phil-page` takes the right gutter for
+  the whole block, so these two are reset there to avoid doubling it.
+*/
+/*
+  Centred, and the padding has to be symmetric for that to mean anything.
+
+  `.phil-page` carries the left gutter and this block carried the right one, so
+  the text column was already inset on both sides — but by two separate rules on
+  two different elements. Centring text inside that works out, because the box
+  this centres within is the one those two paddings define. The rule stays as it
+  was; only the alignment is new.
+*/
+.phil-head {
+  padding-right: var(--pad-x);
+  text-align: center;
+}
+
+
+.phil-head h2 {
+  font-family: var(--font-display);
+  /*
+    36px at the base, stepping to 72px — down from a fluid 41.6 → 118.4.
+
+    The old ceiling put this heading ABOVE the hero headline: 99.4px against the
+    hero's 72px at a 1183px viewport, and a 118.4px cap that beat the hero's 96px
+    at every width. A section heading outranking the page title is what made it
+    read as oversized.
+  */
+  font-size: var(--text-h-section);
+  font-weight: 700;
+  line-height: 0.94;
+  letter-spacing: -0.035em;
+  /*
+    No measure cap. 15ch held the heading to ~700px of an 834px column, so the
+    hard line breaks in `headlineLines` broke earlier than the column needed and
+    the last line was left hanging. The breaks are authored, so the column is what
+    decides whether they look deliberate.
+  */
+}
+
+/*
+  The heading reveals WORD BY WORD, scrubbed by scroll rather than played once.
+
+  No `overflow: hidden` on the line any more — that was the mask for the old
+  slide-up, and it would clip each word's rise.
+*/
+.phil-ln {
+  display: block;
+}
+
+.phil-ln > span {
+  display: block;
+  /*
+    The breaks in `headlineLines` are authored for a wide column. When one of
+    those lines is itself too long to fit — "We work like the team that" at the
+    30px step in a 335px column — the browser wraps it, and left alone it fills
+    the first line and drops one word onto the second. `balance` splits it evenly
+    instead. It is a no-op at every width where the authored line already fits.
+  */
+  text-wrap: balance;
+}
+
+/*
+  One word, revealed on its own slice of the scrub.
+
+  `--phil-p` is 0…1 across the reveal window and is written by Philosophy.tsx on
+  every scroll frame; `--phil-n` is the word count and `--i` this word's index,
+  both written once when the words are wrapped.
+
+  Reading the expression: `p * (n + 2) - i` is how far THIS word is into its own
+  turn, in word-units. Dividing by 3 is what stops the effect looking like a
+  counter — without it each word would snap on over 1/n of the scroll and the
+  line would tick rather than flow. The `+ 2` pays back the overshoot that the
+  division introduces, so the last word still finishes exactly at p = 1.
+
+  Every `var()` carries a fallback that resolves to fully visible. If the script
+  never runs — it is wrapped in an effect, and the words are wrapped in the DOM
+  rather than in the markup — the heading is plain, legible text rather than an
+  invisible one. Same for `prefers-reduced-motion`, where the scrub is not
+  attached at all and `--phil-p` is simply never written.
+*/
+.phil-w {
+  display: inline-block;
+  /*
+    The words take the first 32% of `--phil-p`. That is a smaller share than
+    before but the same distance on screen — the window itself got longer — so the
+    heading reads at the pace it always did while the two beats after it slow
+    down.
+  */
+  --w: clamp(
+    0,
+    calc((clamp(0, var(--phil-p, 1) / 0.32, 1) * (var(--phil-n, 1) + 2) - var(--i, 0)) / 3),
+    1
+  );
+  opacity: var(--w);
+  transform: translateY(calc((1 - var(--w)) * 0.24em));
+}
+
+
+/*
+  "has to live" is set apart in the accent colour. It is a `<mark>` in the content
+  string rather than a second `<em>` because it marks a phrase, not an emphasis,
+  and because `em` already means the accent word inside it.
+
+  Both declarations are undoing a UA default: `mark` ships with a yellow
+  background and black text in every browser. The phrase used to be italic too,
+  which is why a companion rule forced `font-style` onto the nested `em` — upright
+  now, so the global `em { font-style: normal }` already gives the right answer
+  and that rule is gone with it.
+*/
+.phil-head h2 mark {
+  background: none;
+  color: var(--accent);
+}
+
+/*
+  One child now — the counter — so the two-column grid is gone. Left as a grid
+  purely for `justify-items: end`, which is what keeps the counter on the right
+  edge; in the old `1fr auto` it would have dropped into the empty first column
+  and gone left.
+*/
+
+/* ---- Standfirst --------------------------------------------------------- */
+
+/*
+  Now nested inside `.phil-head`, straight under the heading.
+
+  28px above, matching the hero's own headline-to-subhead gap exactly, and
+  nothing below — `.phil-stage`'s `margin-top` already owns that space. The old
+  `padding-block: 56px 40px` was the spacing it needed as a standalone block and
+  would have stacked on top of that margin here.
+
+  No `padding-right` either: `.phil-head` carries the right gutter, and keeping it
+  on both would have doubled it.
+*/
+.phil-standfirst {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 1.5rem;
+  margin-top: 28px;
+  /*
+    Second of three, on its own slice of `--phil-p` — 30% to 64%, overlapping the
+    words slightly so the two read as one movement rather than two. Roughly twice
+    the travel it had before.
+
+    This replaced a one-shot `useReveal` fade. It fired on its own
+    IntersectionObserver, so on a fast scroll it could finish before the heading
+    above it had started, and the block arrived out of order.
+  */
+  --in: clamp(0, calc((var(--phil-p, 1) - 0.3) / 0.34), 1);
+  opacity: var(--in);
+  transform: translateY(calc((1 - var(--in)) * 34px));
+}
+
+.phil-standfirst h3 {
+  /*
+    Set as the hero's subhead, not as a heading. It is an `h3` for the document
+    outline — it introduces the section — but it reads as the description under a
+    title, and the two are the same thing in different places, so they are set the
+    same: Inter rather than the display face, 400 rather than 700, 1.55 rather
+    than 1.12, and zinc-300 rather than full white.
+
+    `font-family` has to be stated, not dropped. The base layer sets the display
+    face on every h1 through h4, so removing the declaration here left the element
+    on Space Grotesk rather than returning it to the body font.
+
+    It used to be a 24→36px display line penned into half the grid, and every one
+    of those five declarations was a leftover from that.
+
+    The one thing NOT copied over is the hero's `max-width: 720px`. That cap is
+    there to hold one specific sentence off a second line, and this block was
+    widened to fill its column on purpose.
+  */
+  grid-column: 1 / 13;
+  font-family: var(--font-sans);
+  font-size: var(--text-sub);
+  font-weight: 400;
+  line-height: 1.55;
+  color: #d4d4d8; /* zinc-300, as .hero-sub */
+}
+
+/* ---- Stage: plate behind, list in front --------------------------------- */
+
+.phil-stage {
+  display: grid;
+  grid-template-columns: 1fr;
+  /*
+    The gap the hairline rule above the plate used to hold. That rule is gone, but
+    its margin was the only thing separating the standfirst from the plate —
+    removing it without moving the margin here would have closed the two up.
+  */
+  margin-top: 40px;
+}
+
+/* Both children occupy the same cell; the plate is pinned, the list scrolls. */
+.phil-stage > * {
+  grid-area: 1 / 1;
+}
+
+.phil-plate {
+  position: sticky;
+  /*
+    Flush with the header's divider, not 10vh down it.
+
+    `top: 10vh` was the original card's offset and it survived the rewrite into a
+    pinned frame, where it did two visible things: it left 19.8px of page showing
+    between the divider and the plate, and — because the plate is also clamped by
+    the bottom of its own sticky container — it made the plate CLIMB that 19.8px
+    plus the header as the section pinned. Measured, top went 84.8 → 0 mid-scroll.
+
+    Pinning to `--nav-h` and taking the same amount off the open height keeps the
+    bottom edge on the window's bottom throughout, so there is nothing left to
+    move: the plate arrives and then holds still.
+  */
+  top: var(--nav-h);
+  align-self: start;
+  /*
+    No bleed margin: the plate already ends at the window.
+
+    This was `calc(50% - 50vw)`, which is the distance from a CENTRED container's
+    edge out to the window. `.phil-page` is no longer centred — it has a left
+    gutter and no right one — so its right edge already sits on the viewport's,
+    and that formula resolved to exactly -(gutter / 2): -34px at a 1074px
+    viewport, which is precisely the horizontal overflow the page had. Measured,
+    not guessed: the document scrolled 34px sideways.
+  */
+  /*
+    The plate opens from a card into the full window as the section arrives at
+    its pinned position. `--x` runs 0 → 1 over that approach (Philosophy.tsx) and
+    every value below is read off it; the fallback is 1 everywhere, so with no
+    script and under `prefers-reduced-motion` the section is simply already open.
+
+    Horizontal: at 0 the card sits inside the gutter on BOTH sides, its left edge
+    on the heading's. The stage already starts at the left gutter and ends on the
+    window's right edge, so 0 is `margin-left: 0; width: 100% - gutter`, and 1 is
+    `margin-left: -gutter; width: 100% + gutter`. Both fall out of one
+    interpolation each.
+
+    `calc(100% ± var(--pad-x))` rather than `100vw`: `100vw` includes the
+    scrollbar and pushes the document sideways — the same trap the old
+    `calc(50% - 50vw)` bleed fell into, noted above.
+
+    Square corners throughout — the card state is square too, so there is no
+    radius to interpolate and none to remove at the end.
+  */
+  /*
+    Last of the three — 60% to 100%, again overlapping a little. It gets the
+    longest run of the three, and is the reason `--phil-p` lives on the section:
+    this element is not inside `.phil-head` where that value used to be written.
+
+    Note this is the plate ARRIVING, which is a different thing from `--x` below
+    — that one is the card opening into the window, and happens much later, at
+    the sticky position.
+  */
+  --in: clamp(0, calc((var(--phil-p, 1) - 0.6) / 0.4), 1);
+  opacity: var(--in);
+  transform: translateY(calc((1 - var(--in)) * 34px));
+  margin: 0 0 0 calc(var(--pad-x) * -1 * var(--x, 1));
+  width: calc(100% + var(--pad-x) * (2 * var(--x, 1) - 1));
+  height: calc(72svh + (28svh - var(--nav-h)) * var(--x, 1));
+  max-height: none;
+  overflow: hidden;
+  /*
+    Dark, but deliberately not the page's own near-black: at `--bg` the plate
+    would stop being a plate and read as a hole in the section. zinc-800 is two
+    steps up the scale, enough to hold an edge against the page while the scrim
+    above still has somewhere to travel to.
+  */
+  background: #27272a; /* zinc-800 */
+}
+
+.phil-plate img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  /*
+    `cover`, and no padding. The artwork reaches every edge of the plate at
+    every width and in every frame of the open — that is the whole rule.
+
+    The padding went first. It was 5vw, put there when the plate was a world map
+    and the dots needed to sit inside the paper like a printed plate; the
+    handshake is composed to run off its edges, so the same inset read as a
+    picture that had failed to arrive. At a 1101px window it was leaving exactly
+    55px of plate showing down the left.
+
+    `contain` went second, and it is the subtler of the two because it only
+    fails SOMETIMES. Which axis it fits to depends on whether the box is wider
+    or taller in proportion than the 1.935 artwork, and this plate crosses that
+    line as it opens. Measured across the open at a 1491px window:
+
+        --x: 0     box 1251 x 611   AR 2.05   35px of plate showing each side
+        --x: 0.5   box 1371 x 697   AR 1.97   12px
+        --x: 1     box 1491 x 783   AR 1.90   flush, 6px of slack top and bottom
+
+    So the gap did not just exist, it ANIMATED — the picture crept outwards as
+    the plate opened, which is a thing a reader notices without being able to
+    name. `cover` removes the axis switch entirely: it fills both, always.
+
+    It costs this picture nothing. The crop at its worst across that whole run
+    is 36px off the height, on a 1536 x 794 source whose subject is centred and
+    whose hands were drawn to bleed. The earlier objection to `cover` — that it
+    would throw away 414px of width — was measured against a 1.41 box that only
+    exists on a phone, and the phone is now the same rule as everything else.
+  */
+  object-fit: cover;
+  /*
+    The asset is black dots on transparent. As an `<img>` it is a separate
+    document, so the page's `color` cannot reach its `currentColor` — `invert`
+    is what turns the dots over, and it is exact here because the only painted
+    pixels are pure black and inversion leaves alpha alone.
+
+    The opacity is what keeps them a texture: white dots at full strength on
+    zinc-800 out-shout the numeral and the list beside them. 0.36 puts the map
+    behind both.
+  */
+  filter: invert(1);
+  opacity: 0.36;
+  /*
+    Nothing transforms this any more. The `scale(1.12)` here was overscan for the
+    `--pan` drift — `scale(s)` anchored at the centre gives `(s - 1) / 2` of slack
+    per edge, and 1.06 did not cover a 5% pan, which is what left 8.5px of the
+    paper background showing along the bottom. With the pan gone the image fills
+    the figure exactly and needs neither the overscan, the transition, nor the
+    compositing hint that went with them.
+  */
+}
+
+/*
+  Scrim over the right of the plate.
+
+  The list sits on top of the plate, and the plate is PAPER — light. Without
+  this the copy is ink-on-paper-on-a-dark-page and unreadable. The gradient
+  runs the paper back down to the page background under the text column, which
+  also gives the section its one hard graphic edge.
+*/
+.phil-plate::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: var(--x, 1);
+  /*
+    Both washes follow a smoothstep, written out as stops, rather than the two or
+    three stops they had.
+
+    The old horizontal ramp spent 28% of the plate fully clear, 34% ramping and
+    then 38% as a flat slab at 0.96 — the ink was dumped into the middle third
+    instead of spread across the plate. It also kinked: the ramp ran at 0.0333
+    alpha per 1% of width to the 46% stop and 0.0225 after it, and a change of
+    slope inside a gradient is visible as an edge.
+
+    `t * t * (3 - 2t)` has zero slope at both ends, so the wash leaves the paper
+    and arrives at full strength without a seam at either end, and the stops are
+    dense enough that sRGB interpolation between them cannot band.
+
+    The horizontal one is scheduled to reach 0.92 by 59%, which is where the text
+    column starts — measured, not chosen.
+  */
+  background:
+    linear-gradient(
+      90deg,
+      rgb(9 9 11 / 0) 10%,
+      rgb(9 9 11 / 0.04) 17%,
+      rgb(9 9 11 / 0.15) 24%,
+      rgb(9 9 11 / 0.3) 31%,
+      rgb(9 9 11 / 0.48) 38%,
+      rgb(9 9 11 / 0.66) 45%,
+      rgb(9 9 11 / 0.81) 52%,
+      rgb(9 9 11 / 0.92) 59%,
+      rgb(9 9 11 / 0.96) 66%
+    ),
+    linear-gradient(
+      180deg,
+      rgb(9 9 11 / 0) 60%,
+      rgb(9 9 11 / 0.02) 65%,
+      rgb(9 9 11 / 0.08) 70%,
+      rgb(9 9 11 / 0.16) 75%,
+      rgb(9 9 11 / 0.25) 80%,
+      rgb(9 9 11 / 0.34) 85%,
+      rgb(9 9 11 / 0.42) 90%,
+      rgb(9 9 11 / 0.48) 95%,
+      rgb(9 9 11 / 0.5) 100%
+    );
+}
+
+/*
+  Only one scrim now. It protects the right-hand column, so it belongs to the open
+  state and fades in with it; closed, the plate is bare paper and photograph.
+
+  There WAS a second one here for the closed state — a dark band down the middle,
+  under the centred titles. It is gone at the author's request. Worth knowing what
+  that costs: the titles are white on the plate's own tone with nothing between
+  them, so their contrast is whatever the photograph happens to be at that point.
+*/
+
+/* Registration mark — a printing detail, drawn in ink on the paper. */
+/*
+  Registration mark: a moulded ring with a cross turning inside it.
+
+  It was drawn in CSS — a 28px bordered circle with two 2px bars as its
+  pseudo-elements — and it is now the supplied artwork, two pieces of the same
+  white plastic as the rest of the site's 3D marks.
+
+  THE RING DOES NOT TURN. Only the bars do, which is what the CSS version did
+  too: rotating a circle is invisible, so turning the whole thing and turning
+  only the bars looked identical. With artwork it stops being identical — the
+  ring has highlights, and spinning them gives away that it is a picture — so
+  the two pieces are two layers and only one of them carries the transform.
+
+  The pieces are supplied as two 800 x 800 frames with the ink sitting wherever
+  it happened to land in each: measured, the cross's ink was centred 29.5px
+  ABOVE the middle of its frame. Rotating a box turns it about the box's centre,
+  so that offset made the mark orbit a point 2.2px off itself instead of
+  spinning in place — which is the wobble this fixes. Each piece is re-centred
+  on its own ink at export, so both now sit at the middle of their frame and the
+  cross turns about the ring's own centre.
+*/
+.phil-reg {
+  position: absolute;
+  z-index: 2;
+  /*
+    120px, and the two offsets are derived from it rather than chosen.
+
+    The ink is a fixed share of each frame — the ring 47.13% of it and the cross
+    78.75% — so the box draws a 57px ring inside a 94px cross, with 12.75px of
+    empty frame around the cross. That frame is the whole reason the offsets are
+    not round: the BOX is not what anyone sees, so both subtract it and line the
+    INK up with the page instead.
+
+      left  --pad-x - 60   puts the mark's CENTRE on the gutter
+      top   68             puts the cross's top tip 80px below the plate's top
+                           edge, which is where the mark sat when it was drawn
+                           in CSS
+
+    The left is centre alignment, not edge alignment, and that is the point of
+    it. `--pad-x` is where Team's leftmost grid rule falls directly below this —
+    measured, x=120 on a 1101px window for both — so putting the crosshair's own
+    centre there stands it on that line. A registration mark is a crosshair; what
+    it marks is its middle, so its middle is the thing that has to line up with
+    something. Aligning its left EDGE to the gutter, which is what the earlier
+    version did, left the centre 47px off that rule and reading as a near miss.
+
+    Both inks are centred in their frame, so the box's centre is the mark's
+    centre and the 60 is simply half the box. The box therefore hangs well left
+    of the gutter; it is not what anyone sees.
+  */
+  top: 68px;
+  left: calc(var(--pad-x) - 60px);
+  width: 120px;
+  height: 120px;
+  /*
+    It belongs to the OPEN plate, so it arrives with it.
+
+    A registration mark is a printer's alignment target — it marks a sheet, and
+    while the plate is still a card inside the page there is no sheet for it to
+    mark. Sitting on the card it read as a logo stuck in a corner; on the
+    full-bleed plate it reads as the thing it is.
+
+    `--x` is the same 0 to 1 the plate opens on, set per frame by Philosophy.tsx
+    and already driving the plate's own width, height and margin. This takes the
+    last eighth of that run: nothing until 0.88, full by 1. No transition — the
+    value is written every frame, and a transition on top of a scrubbed property
+    only makes it lag the scroll.
+
+    The `1` fallback matters: with no script, or under `prefers-reduced-motion`
+    where the section is simply already open, the mark is simply there.
+  */
+  opacity: clamp(0, calc((var(--x, 1) - 0.88) * 8.34), 1);
+}
+
+.phil-reg::before,
+.phil-reg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-position: center;
+  background-repeat: no-repeat;
+  /*
+    `contain` and not `cover`: the ink is centred in a frame with air around it,
+    and cover would crop that air away — the bars would run off the box and the
+    two pieces would stop agreeing about where the centre is.
+  */
+  background-size: contain;
+}
+
+/*
+  The ring, underneath and still — and smaller than the artwork draws it.
+
+  The two pieces were rendered as one object, so at a shared `contain` the ring
+  fills 47.13% of the box against the cross's 78.75% and the bars only just clear
+  it. 82% of that shrinks the ring to about 46px inside a 94px cross without
+  touching the cross at all, which is what opens the four arms up and makes the
+  thing read as a registration mark rather than as a cross in a hoop.
+
+  A background-size on this layer alone rather than a transform, so it stays
+  concentric for free: `background-position: center` on the rule above keeps the
+  smaller ring on the same centre the cross turns about.
+*/
+.phil-reg::before {
+  background-image: url('/assets/brand/reg-ring.webp');
+  background-size: 82%;
+}
+
+/*
+  The cross, over it, and the only thing that moves.
+
+  88%, so the bars come in a little from the box's edge — 83px of ink rather than
+  the 94.5 a bare `contain` draws. Sized here rather than by shrinking the box,
+  because the box's centre is what sits on the gutter line and on Team's grid
+  rule below it; changing the box would move that, and changing the background
+  inside it does not.
+*/
+.phil-reg::after {
+  background-image: url('/assets/brand/reg-cross.webp');
+  background-size: 88%;
+  /*
+    One full turn per principle, the same rule the 2D version ran on. Its ink is
+    centred in this box, so the default 50% 50% origin is the middle of the
+    cross itself and it turns without travelling.
+  */
+  transform: rotate(calc(var(--reg-turn, 0) * 1turn));
+  /*
+    No transition. `--reg-turn` is rewritten every scroll frame by Philosophy.tsx
+    and is already where the reader put it; easing it would make the mark lag
+    behind the page and carry on turning after the page had stopped, which is
+    what a timed version of this did.
+  */
+}
+
+/* Reduced motion is handled at the source: `pick()` writes 0 and never moves. */
+
+/*
+  Caption sits top-left beside the mark, not bottom-left: the plate's lower
+  half is dark and ink-on-dark disappears. Right-aligning is not an option
+  either — that edge is off-screen.
+*/
+
+/* ---- List --------------------------------------------------------------- */
+
+.phil-list {
+  position: relative;
+  z-index: 2;
+  width: min(46%, 540px);
+  justify-self: end;
+  padding-inline: 32px 12px;
+  /*
+    Lead-in above the first row, measured in Philosophy.tsx.
+
+    The section finishes opening with the list's top just under the header, which
+    put the first row's centre around 176px down a 848px window while `pick()`
+    chooses whichever row is nearest the window's MIDDLE. Row 2 was always nearer,
+    so row 1 went from unseen to skipped — it had its turn while the section was
+    still a closed card with nothing drawn on it.
+
+    Padding rather than a transform: this has to move the row's box, because the
+    box is what `pick()` measures.
+
+    `--list-tail` is the same idea at the other end — the run-out that lets the
+    last row reach the middle of the window before the section pins. Both are
+    measured in Philosophy.tsx.
+
+    Two breakpoints below set a flat `padding-bottom` of their own, which beat a
+    plain `var()` here on source order; they now add the tail into a `calc()`
+    instead. The measurement already counts whatever is there, so the two
+    compose.
+  */
+  padding-top: var(--list-lead, 0px);
+  padding-bottom: var(--list-tail, 0px);
+  /*
+    Closed, the section is the photograph and nothing else. One opacity does all
+    of it — titles, numerals, descriptions, rules — and the per-row read/current
+    fade on `.phil-item` multiplies through underneath.
+
+    The column does NOT move. It slid in from the centre back when the closed
+    state showed centred titles; with those gone there is nothing to slide from,
+    so it sits where it always sat and only fades. That took `--list-w` and the
+    `--list-pad-*` pair with it: both existed solely to express the centring
+    correction, so the paddings are plain values again.
+  */
+  opacity: var(--x, 1);
+}
+
+.phil-item {
+  position: relative;
+  padding-block: 32px;
+  opacity: 0;
+  transform: translateY(18px);
+  transition:
+    opacity 800ms var(--ease-out-expo),
+    transform 800ms var(--ease-out-expo);
+}
+
+/*
+  The separator under every row — and the track the progress runs along.
+
+  It is a pseudo-element rather than a border because borders cannot have rounded
+  ends, and it sits at the BOTTOM of each row rather than the top so the first row
+  opens on its numeral instead of on a line. Six rows, six lines, in the same
+  places the borders drew them.
+*/
+.phil-item::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  border-radius: 999px;
+  background: var(--color-border);
+}
+
+/* Read but not current: legible enough to scan, quiet enough to ignore. */
+.phil-item.is-seen {
+  opacity: 0.38;
+  transform: none;
+}
+
+.phil-item.is-on {
+  opacity: 1;
+}
+
+/*
+  The progress itself, sweeping left to right along the track on the current row.
+
+  Same box as `::after` and drawn over it — hence the `z-index`, since a `::before`
+  otherwise paints UNDER its sibling `::after`. While it is partway across, the
+  accent is on the left and the track shows through on the right, which is what
+  makes it read as progress rather than as a line that happens to grow.
+*/
+.phil-item::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  z-index: 1;
+  height: 2px;
+  width: 0;
+  border-radius: 999px;
+  background: var(--color-accent);
+  transition: width 900ms var(--ease-out-expo);
+}
+
+.phil-item.is-on::before {
+  width: 100%;
+}
+
+/* Numeral hangs in the left margin, outlined rather than filled. */
+.phil-num {
+  position: absolute;
+  right: calc(100% + 12px);
+  top: 28px;
+  width: 5ch;
+  text-align: right;
+  font-family: var(--font-display);
+  font-size: 3.75rem; /* 60 — 6xl */
+  font-weight: 400;
+  line-height: 1;
+  color: transparent;
+  -webkit-text-stroke: 1.5px rgb(250 250 250 / 0.32);
+  pointer-events: none;
+  transition: -webkit-text-stroke-color 700ms var(--ease-out-expo);
+}
+
+.phil-item.is-on .phil-num {
+  -webkit-text-stroke-color: var(--color-accent);
+}
+
+.phil-item h4 {
+  font-family: var(--font-display);
+  font-size: 1.875rem; /* 30 — 3xl */
+  font-weight: 700;
+  line-height: 1.14;
+  letter-spacing: -0.02em;
+  margin-bottom: 12px;
+}
+
+.phil-item p {
+  max-width: 40ch;
+  color: var(--color-muted);
+  font-size: 1rem;
+  line-height: 1.65;
+}
+
+/* ---- Stepped scale ------------------------------------------------------ */
+/*
+  Fixed steps per breakpoint, replacing the fluid `clamp(min, Nvw, max)` this
+  section was written with. Same convention as site.css: a size proportional to
+  viewport width lands on fractional px everywhere inside the interpolation band,
+  and the site's rule is that every size, padding and spacing is an even number.
+
+  Each step is the old curve's value at the LOWER edge of its band — evaluated at
+  320px for the base — snapped to a Tailwind text step for type and to a multiple
+  of 4 for spacing.
+
+  Nearest step, not rounded down. site.css rounds down because its hero headline
+  could overflow a narrow screen if a step came out larger than the curve. Nothing
+  here is at that risk, and rounding down would have cost real size: `.phil-num`
+  reads 46.4px at the base, and the ladder jumps 36 → 48, so flooring it would
+  have dropped a fifth of the numeral. Every step here is within ~2px of the curve
+  it replaces; overflow was checked at each band rather than assumed.
+
+  This block sits BEFORE the ≤900px block below, deliberately. These are
+  min-width queries, so the 640 and 768 bands overlap that max-width block — after
+  it, they would override the mobile layout between 768 and 900. The three
+  properties that block owns get their own step further down.
+*/
+@media (min-width: 640px) {
+  .phil-stage {
+    margin-top: 44px;
+  }
+
+}
+
+@media (min-width: 768px) {
+  .phil {
+    padding-block: 60px 0;
+  }
+
+
+  .phil-stage {
+    margin-top: 52px;
+  }
+
+  .phil-list {
+    padding-inline: 32px 16px;
+  }
+
+  .phil-item {
+    padding-block: 36px;
+  }
+
+  .phil-num {
+    top: 32px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .phil {
+    padding-block: 80px 0;
+  }
+
+
+  .phil-stage {
+    margin-top: 68px;
+  }
+
+  .phil-list {
+    /* The run-out ADDS to this; see `--list-tail` on the base rule. */
+    padding-bottom: calc(92px + var(--list-tail, 0px));
+    padding-inline: 32px 20px;
+  }
+
+  .phil-item {
+    padding-block: 48px;
+  }
+
+  .phil-num {
+    right: calc(100% + 16px);
+    top: 44px;
+    font-size: 4.5rem; /* 72 — 7xl */
+  }
+
+  .phil-item h4 {
+    font-size: 2.25rem; /* 36 — 4xl */
+  }
+}
+
+@media (min-width: 1280px) {
+  .phil {
+    padding-block: 100px 0;
+  }
+
+
+  .phil-stage {
+    margin-top: 84px;
+  }
+
+  .phil-list {
+    /* The run-out ADDS to this; see `--list-tail` on the base rule. */
+    padding-bottom: calc(112px + var(--list-tail, 0px));
+    padding-inline: 32px 28px;
+  }
+
+  .phil-item {
+    padding-block: 56px;
+  }
+
+  .phil-num {
+    right: calc(100% + 20px);
+    font-size: 6rem; /* 96 — 8xl */
+  }
+
+  .phil-item h4 {
+    font-size: 3rem; /* 48 — 5xl */
+  }
+}
+
+/* ---- ≤900px: plate becomes a pinned card, list runs full width ---------- */
+
+@media (max-width: 900px) {
+  /* Below 900 the plate is a pinned card, not a bleed, so the block gets its
+     right gutter back — the same --pad-x as the left, and the two copy blocks
+     hand theirs over rather than doubling it. */
+  .phil-page {
+    padding-right: var(--pad-x);
+  }
+
+  .phil-head {
+    padding-right: 0;
+  }
+
+  .phil-head h2 {
+    max-width: none;
+  }
+
+  /*
+    The stage keeps the base rule's single cell, so the plate stays BEHIND the
+    list exactly as on desktop.
+
+    This block used to set `grid-area: auto`, which took the two out of the same
+    cell and stacked them — plate first, list after — and then needed
+    `z-index: 3` on the plate to look right. The result was a card that covered
+    the row it had scrolled over: measured, the plate's sticky box sat at y=10
+    with z-index 3 over a list at z-index 2.
+  */
+
+  /*
+    No open/closed states here — the plate is a card and the list sits below it.
+
+    Pinning `--x` at 1 settles every rule that reads it in one declaration, rather
+    than restating the numeral, the description, the rules and the hairlines. It
+    needs `!important` because Philosophy.tsx writes `--x` as an inline style, and
+    an inline declaration outranks a stylesheet one unless the stylesheet says so.
+  */
+  .phil-stage {
+    --x: 1 !important;
+  }
+
+  /*
+    The plate is the full-screen frame here too — the base rule already builds it
+    at `--x: 1`, so only the bleed needs restating.
+
+    The base width is `100% + --pad-x` with a left margin of `-(--pad-x)`, which
+    is right on desktop where `.phil-page` has a left gutter and no right one.
+    Below 900 the page gets its right gutter back, so the plate has two to cross
+    rather than one.
+  */
+  .phil-plate {
+    margin-left: calc(var(--pad-x) * -1);
+    width: calc(100% + var(--pad-x) * 2);
+  }
+
+  /*
+    The scrim turns from a side wash into a flat one.
+
+    The base scrim ramps left-to-right because the desktop list is a narrow
+    column on the right — it reaches 0.92 at 59% of the plate, which is where
+    that column starts. Here the list is the full width of the stage, so a
+    horizontal ramp would leave the left half of every line sitting on bare
+    photograph. One even wash protects all of it, and the vertical fade stays so
+    the plate still has an edge at the bottom.
+
+    0.58 is the weakest wash that still clears AA on the worst pixel. The dots
+    are white at `opacity: 0.36` over zinc-800, so they composite to about 117;
+    behind a 0.58 wash that lands at 54, and the muted body text (#a1a1aa)
+    against 54 is 4.77:1. Over the plate's own tone, where most of every glyph
+    actually sits, it is 7.1:1.
+
+    It matters that this is the WEAKEST such value: the wash also decides whether
+    the map is visible at all. At the 0.82 this started as, the map's remaining
+    contrast was 0.36 x 0.18 = 6.5% and the background had effectively
+    disappeared.
+  */
+  .phil-plate::after {
+    background:
+      linear-gradient(180deg, rgb(9 9 11 / 0.58) 0%, rgb(9 9 11 / 0.58) 100%),
+      linear-gradient(180deg, rgb(9 9 11 / 0) 60%, rgb(9 9 11 / 0.5) 100%);
+  }
+
+  .phil-list {
+    width: 100%;
+    justify-self: stretch;
+    padding-inline: 0;
+  }
+
+  /*
+    Text steps up because it is now reading over a picture.
+
+    Everywhere else on the page the body copy sits on the page's own near-black
+    and measures 7.76:1. Here it sits on the plate behind a 0.58 wash, and on the
+    map's dots that falls to 4.70 — technically AA, visibly sunk. Raising the
+    TEXT rather than the wash is what keeps the map visible: darkening the
+    backdrop far enough to fix this is what made the background disappear in the
+    first place.
+
+      #a1a1aa (zinc-400)  ->  4.70 on a dot,  7.05 on the plate
+      #d4d4d8 (zinc-300)  ->  8.47 on a dot, 12.54 on the plate
+
+    The heading needs nothing: white already measures 11.55 on the worst pixel.
+
+    The numeral is an outline, and an outline is mostly holes — a 0.32 stroke
+    that reads fine on flat paper disappears over dots. 0.48 puts it back without
+    letting it compete with the accent-coloured one on the current row.
+  */
+  .phil-item p {
+    color: #d4d4d8; /* zinc-300 */
+  }
+
+  .phil-num {
+    -webkit-text-stroke-color: rgb(250 250 250 / 0.48);
+  }
+
+  /*
+    The registration mark is off below 900.
+
+    It is a printing detail drawn in the plate's empty left margin, and on
+    desktop that margin exists because the list is a narrow column on the right.
+    Here the list is the full width of the stage: measured, the mark occupies
+    x=20–48 and the numerals start at x=52, so the two share a four-pixel gap and
+    read as one collided object. There is no free margin left to move it into, so
+    it goes rather than being squeezed.
+  */
+  .phil-reg {
+    display: none;
+  }
+
+  /*
+    The numeral moves from the left margin into the row, so the row has to
+    reserve its width — and the reservation has to be a number the numeral
+    actually fits in.
+
+    It was a bare `padding-left: 44px` against a numeral left at `width: auto`,
+    and the two drifted apart: measured at 36px, "04" renders 45.58px wide and
+    "02", "03", "05", "06" all land between 44.6 and 45.2. Five of the six rows
+    overlapped their own heading. Only "01" cleared, because the digit 1 is
+    narrow — which is why this reads as a bug on one row rather than on the list.
+
+    `-webkit-text-stroke` makes it worse than the box says: the 2px stroke is
+    centred on the glyph outline, so it paints about 1px beyond the measured
+    width on each side.
+
+    Both values now come off one declared width, so the gap cannot drift again.
+  */
+  .phil-item {
+    --num-w: 48px;
+    --num-gap: 12px;
+
+    padding-left: calc(var(--num-w) + var(--num-gap));
+  }
+
+  /* Dimming a row you are still reading past is worse than no tracking. */
+  .phil-item.is-seen {
+    opacity: 1;
+  }
+
+  .phil-num {
+    right: auto;
+    left: 0;
+    width: var(--num-w);
+    text-align: left;
+    top: 28px;
+    /*
+      36. This was tried at 28 to give the description line back some width, and
+      put back: the gain was one character a line, because `--num-w` rounds up to
+      an even value and swallowed most of it, while the numeral visibly lost
+      against a 30px heading it is supposed to anchor.
+
+      If the line length is worth attacking again, the lever is the LAYOUT — the
+      numeral inline with the heading rather than hanging in a column — which
+      returns the full 335px and about 42 characters. Shrinking the type does
+      not get there.
+    */
+    font-size: 2.25rem; /* 36 — 4xl */
+  }
+}
+
+/*
+  The three properties the ≤900px block above owns, stepped within its own range.
+  Scoped with both bounds so it cannot leak past 900 and fight the desktop ladder.
+*/
+@media (min-width: 640px) and (max-width: 900px) {
+  /*
+    Same formula one step up. At 48px the widest numeral measures about 61px, so
+    64px is the first even width that still clears the stroke — `padding-left`
+    follows from it rather than being written again by hand.
+  */
+  .phil-item {
+    --num-w: 64px;
+  }
+
+  .phil-num {
+    top: 44px;
+    font-size: 3rem; /* 48 — 5xl */
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .phil-ln > span {
+    transform: none;
+  }
+
+  .phil-item {
+    opacity: 1;
+    transform: none;
+  }
+
+  .phil-standfirst {
+    opacity: 1;
+    transform: none;
+  }
+}

@@ -1,0 +1,120 @@
+import type { Stat } from '@/types';
+
+export const whyContent = {
+  kicker: 'Why Velocity',
+  stackLabel: 'Build with',
+  headline: { lead: 'Built different,', emphasis: 'on purpose' },
+  /*
+    Blurred, brightened IDE screenshot behind the tech list.
+
+    1600px wide, not the 3000px original. CSS blurs it 6.5px and caps it at 45%
+    opacity, so detail finer than about 13 CSS px never reaches the screen —
+    measured through that exact pipeline, the 1600px source differs from the
+    3000px one by 0.28/255 on average at a 1440px window and 0.35 at 2560, with
+    a worst single channel of 15. 610KB -> 120KB.
+
+    A new filename, not new bytes at the old one: /assets is served `immutable`,
+    so a replaced file never reaches anyone who has already loaded it. The PNG
+    is still on disk.
+  */
+  backdrop: '/assets/why/vscode-bg-1600.webp',
+} as const;
+
+/**
+ * Scrubbed through by scroll position in a tall masked window — the active
+ * entry sits centred and accent-coloured while its neighbours dim out at the
+ * edges. Order is alphabetical, so it reads as a deliberate list.
+ */
+export const techStack: string[] = [
+  'AWS',
+  'Claude Code',
+  'CloudSQL',
+  'Figma',
+  'GCP',
+  'GitHub Copilot',
+  'Go',
+  'JavaScript',
+  'NodeJS',
+  'Postgres',
+  'RabbitMQ',
+  'React',
+  'Solidity',
+  'SQL',
+  'TailwindCSS',
+  'TypeScript',
+];
+
+/**
+ * Optional logo per technology, shown beside the list while that entry is the
+ * active one. A name with no entry here simply shows nothing, and the panel is
+ * not rendered at all until at least one exists — so the section looks exactly
+ * as it does now until the artwork arrives.
+ *
+ * Keyed by the strings in `techStack` above, so the two cannot drift apart
+ * silently: a typo here is a missing logo, never a wrong one.
+ *
+ * Thirteen of these are Simple Icons (simpleicons.org, CC0 collection) pulled as
+ * white monochrome, which is the convention the client logos in
+ * `public/assets/partners` already follow. AWS is not in Simple Icons — Amazon
+ * had it removed — so it comes from devicon and was recoloured from #f90 to
+ * white to match the rest; white-on-dark is the standard reversed treatment.
+ *
+ * The marks remain their owners' trademarks. Using them to say "we build with
+ * this" is ordinary, but if any of them ends up next to something that could
+ * read as an endorsement, check that owner's brand page first.
+ */
+export const techLogos: Record<string, string> = {
+  AWS: '/assets/tech/aws.svg',
+  'Claude Code': '/assets/tech/claude.svg',
+  Figma: '/assets/tech/figma.svg',
+  GCP: '/assets/tech/gcp.svg',
+  'GitHub Copilot': '/assets/tech/github-copilot.svg',
+  Go: '/assets/tech/go.svg',
+  JavaScript: '/assets/tech/javascript.svg',
+  NodeJS: '/assets/tech/nodejs.svg',
+  Postgres: '/assets/tech/postgres.svg',
+  RabbitMQ: '/assets/tech/rabbitmq.svg',
+  React: '/assets/tech/react.svg',
+  Solidity: '/assets/tech/solidity.svg',
+  TailwindCSS: '/assets/tech/tailwindcss.svg',
+  TypeScript: '/assets/tech/typescript.svg',
+  /*
+    CloudSQL and SQL have no entry on purpose.
+
+    CloudSQL is a Google Cloud PRODUCT, not a brand of its own — its icon ships
+    only in Google's own product-icon pack. Pointing it at the Google Cloud mark
+    would put the same logo on two different rows.
+
+    SQL is a language, not a company. There is nothing to show.
+  */
+};
+
+export const stats: Stat[] = [
+  {
+    id: 'mvp',
+    value: '6 Mo.',
+    label: 'Zero to MVP',
+    description: 'Our target for getting a production-ready MVP out the door.',
+    // The only stat that counts up; the other three are words.
+    countTo: 6,
+    countSuffix: ' Mo.',
+  },
+  {
+    id: 'expertise',
+    value: 'CTO-Level',
+    label: 'Expertise',
+    description: 'Senior engineers with real experience leading every engagement.',
+  },
+  {
+    id: 'clientele',
+    value: 'Selective',
+    label: 'Clientele',
+    description: 'We take on a few projects at a time so we can actually focus.',
+  },
+  {
+    id: 'delivery',
+    value: 'Early',
+    label: 'Delivery',
+    description: 'We aim to ship ahead of schedule, not behind.',
+  },
+];

@@ -1,0 +1,4307 @@
+/* ==========================================================================
+   Velocity Labs — port of the production stylesheet
+   --------------------------------------------------------------------------
+   Source of truth: https://velocity-labs-revamp.vercel.app/styles.css
+
+   WHY THIS FILE EXISTS
+   The production stylesheet is one hand-written sheet that grew through
+   fifteen revision blocks — each headed "v2", "v3" … "v15" — with every block
+   overriding the last. Re-deriving those end values as Tailwind utilities is
+   how the earlier rebuild drifted: an override several blocks down would get
+   missed and the section would look "close enough" but measure wrong.
+
+   So the rules live here instead, keyed to the same class names as
+   production. Two deliberate differences from a byte-copy:
+
+   1. Later revision blocks are collapsed into the value that actually wins,
+      with a note where the history matters. Computed styles are identical;
+      the cascade is just legible now.
+   2. Rules whose markup no longer exists on the live page are dropped — the
+      abandoned canvas garden (`.garden-*`, `.veil`), the v2 "toy" pillar
+      visuals superseded in v3, `.tech-flip`, `.phil-cards`. None of them can
+      match an element, so none of them can affect rendering.
+
+   Colours come from the @theme tokens in globals.css — no hex literals here
+   either, same rule as the components.
+   ========================================================================== */
+
+:root {
+  --bg: var(--color-bg);
+  --fg: var(--color-fg);
+  --muted: var(--color-muted);
+  --card: var(--color-card);
+  --border: var(--color-border);
+  --accent: var(--color-accent);
+  --accent-light: var(--color-accent-light);
+  /*
+    --max was here: a 1200px cap that `.section`, `.hero-inner`, the Why stage and
+    the footer each centred themselves in. It is gone — the content column is the
+    gutter now, and nothing reads this token any more. A dead token that four
+    blocks used to interpret two different ways is exactly how they drifted apart.
+  */
+  --r: 16px;
+  /*
+    Button shape, shared by every button and the nav CTA.
+
+    Back to the original pill. This was a chamfered `clip-path` polygon for a
+    while; `border-radius` is the simpler tool now that the corners are round,
+    and it does not clip the layers the way clip-path did.
+  */
+  --poly-radius: 999px;
+  /*
+    Horizontal padding for every button, in one place — the three used to carry
+    28px, 34px and 20px and read as three different components.
+
+    Even, like every size, padding and spacing on this site: that is a house rule,
+    so prefer px here over a rem value that lands on a fraction (0.81rem was
+    12.96px, and 1.75rem was the 28px this replaces).
+  */
+  /*
+    Two sizes, one step of Tailwind's scale apart: the hero, and every section
+    heading below it. They were five separate ladders topping out at 96, 72, 60,
+    48 and 36px, so nothing in the page agreed with anything else; then one ladder
+    for all of them, which made the page title and the section titles the same
+    size. The hero outranks them by exactly one step at every breakpoint.
+
+    `.phil-head h2` in globals.css reads the section one too.
+  */
+  --text-h-hero: 2.25rem; /* 36 — 4xl */
+  --text-h-section: 1.875rem; /* 30 — 3xl */
+  /*
+    The description that sits under a heading — the hero's subhead and the
+    Philosophy standfirst read the same one, so they cannot drift the way the
+    headings had.
+  */
+  --text-sub: 1rem; /* 16 — base */
+  --poly-pad-x: 20px;
+  /*
+    Header gutter. One variable because the absolutely-positioned nav strip has
+    to line up with it — `left/right: 0` on an absolute child resolves against
+    the PADDING box, i.e. the bar's outer edge, so it would sit flush to the
+    viewport and ignore the padding entirely.
+  */
+  /*
+    The horizontal gutter, shared by .hero, .section, .ws-cards, .contact,
+    .footer and the sound toggle — it was the identical clamp written out seven
+    times. Stepped at the type breakpoints further down.
+  */
+  --pad-x: 20px;
+  /*
+    The nav follows the same gutter until the desktop bar takes over at 861px and
+    pins it to 120px (see that block).
+  */
+  --nav-gutter: var(--pad-x);
+  /*
+    The bar's own height, 16px of padding either side of a 32px control plus a
+    1px rule, and the same in both scroll states — measured, not assumed. It is a
+    token because things that pin below the bar have to line up with its divider;
+    `.phil-plate` in globals.css is the first.
+  */
+  --nav-h: 65px;
+  /*
+    The button face, in one place. Used by the secondary buttons at rest, the nav
+    CTA, and the primary's hover — those three have to stay identical, and they
+    drifted apart more than once while each carried its own copy.
+
+    Back to rgb(45,45,45), the polygon reference button's own fill (see the block
+    above `.btn-poly`). It is OPAQUE, which is the whole point: every translucent
+    version tried here — zinc-950 at 0.72 to match `.nav.scrolled`, then zinc-700
+    to lift it — let `backdrop-filter` sample the hero clip, so the buttons drifted
+    between grey and black as the loop played. A solid face holds one colour on
+    every frame.
+
+    The blur goes with it: under an opaque fill it changes nothing on screen and
+    still forces a backdrop-root pass. Names kept as-is to keep this diff small,
+    even though "glass" no longer describes it — worth renaming in the Production
+    Review pass.
+  */
+  /*
+    zinc-800 — was rgb(45,45,45), a pure neutral (chroma 0) sitting off the zinc
+    scale entirely. Currently referenced only as the `.btn-poly` base fallback:
+    the unified hollow buttons override it to transparent, so nothing renders it.
+  */
+  --poly-glass: var(--border);
+  --poly-glass-blur: none;
+  /*
+    The stroke both button variants wear, in one place. Grey, not white — a white
+    rim read as a lit edge and pulled the whole button towards white. This is the
+    reference button's own outline colour, rgb(152,152,152), which is the point:
+    it sits LIGHTER than the face it surrounds, so the rim shows without becoming
+    the loudest thing on the button. Primary draws it at 1px, secondary at 2px —
+    same colour, so the two read as one family.
+  */
+  /* zinc-400 at 55% — was #989898, another off-scale pure neutral. */
+  --poly-stroke: color-mix(in oklab, var(--muted) 55%, transparent);
+  --font-sans: var(--font-inter), system-ui, sans-serif;
+  --font-disp: var(--font-space-grotesk), var(--font-inter), sans-serif;
+}
+
+/* ---- base ---------------------------------------------------------- */
+
+body {
+  line-height: 1.55;
+  overflow-x: hidden;
+}
+
+img,
+svg,
+video,
+canvas {
+  display: block;
+  max-width: 100%;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+em {
+  font-style: normal;
+  color: var(--accent);
+}
+
+/* ---- scroll progress ----------------------------------------------- */
+
+.scroll-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 2px;
+  width: 0;
+  z-index: 200;
+  background: linear-gradient(90deg, var(--accent), var(--accent-light));
+  /*
+    No glow. `box-shadow: 0 0 12px` spread the accent 12px down onto the header
+    directly below, and the header's own `backdrop-filter: blur(14px)` then
+    smeared it into a second, softer band — so a single 2px bar read as two
+    progress lines stacked at the top of the page.
+  */
+}
+
+/* ---- nav ----------------------------------------------------------- */
+
+.nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  /*
+    One padding for both states — the bar no longer shrinks on scroll. It used to
+    go 20px → 12px, so `padding` was in the transition list below; with nothing
+    left to animate it is dropped from there too. The scrolled state now changes
+    only background, blur and border.
+  */
+  padding: 16px var(--nav-gutter);
+  transition:
+    background 0.4s,
+    backdrop-filter 0.4s,
+    border-color 0.4s;
+  border-bottom: 1px solid transparent;
+}
+
+/* The bar SHRINKS once scrolled — padding is part of the transition. */
+.nav.scrolled {
+  background: rgb(9 9 11 / 0.72);
+  backdrop-filter: blur(14px);
+  border-bottom-color: var(--border);
+}
+
+
+
+.brand {
+  font-family: var(--font-disp);
+  font-weight: 600;
+  font-size: 1.125rem;
+  letter-spacing: -0.01em;
+}
+
+.brand span {
+  color: var(--accent);
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 16px; /* steps up at lg/xl */
+  /* 0.92rem → 1rem. The mobile panel sets its own 1.7rem, so this is desktop only. */
+  font-size: 1rem;
+}
+
+.nav-links a {
+  /*
+    White, not muted grey. The bar sits over the hero clip, which runs bright
+    through the snow and aurora frames — grey text disappeared into it.
+  */
+  color: var(--fg);
+  /* Medium instead of the inherited 400. Inter is self-hosted as a variable
+     font (100–900), so this is a real weight, not a synthesised one. */
+  font-weight: 500;
+  transition:
+    color 0.25s,
+    opacity 0.25s;
+}
+
+/*
+  Hover now dims instead of brightening, since the resting state is already
+  white. Excludes the CTA — that one has its own reveal and must not fade.
+*/
+.nav-links a:not(.nav-cta):hover {
+  opacity: 0.65;
+}
+
+.nav-cta {
+  padding: 8px 16px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--fg) !important;
+  transition: all 0.25s;
+}
+
+.nav-cta:hover {
+  border-color: var(--accent);
+  background: rgb(from var(--accent) r g b / 0.1);
+}
+
+.nav-toggle {
+  display: none;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  width: 44px;
+  height: 44px;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  padding: 8px;
+  z-index: 101;
+  /*
+    Pulled 9px into the gutter so the BARS line up with the wordmark, not the
+    button box. The box already sits 20px off the edge like the wordmark, but the
+    24px bars sit inside 8px of padding plus 1px of centring slack in the 42px
+    box — so they read 9px short. The 42px tap target is unchanged; it just
+    overhangs. Production leaves this 9px in.
+  */
+  margin-right: -8px;
+}
+
+.nav-toggle span {
+  display: block;
+  height: 2px;
+  width: 24px;
+  background: var(--fg);
+  border-radius: 2px;
+  transition:
+    transform 0.3s,
+    opacity 0.3s;
+}
+
+.nav.open .nav-toggle span:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+
+.nav.open .nav-toggle span:nth-child(2) {
+  opacity: 0;
+}
+
+.nav.open .nav-toggle span:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
+/*
+  Header wordmark enlarged to a 32px box (production renders 28.52px).
+
+  Both properties are needed: 1.29rem scales the glyphs by the same 12.2% the
+  box grew, and pinning the line-height means the height is exactly 32 rather
+  than 31.99 from the inherited 1.55. Scoped to `.nav` so the footer keeps its
+  own 1rem wordmark.
+
+  No knock-on effect on the bar: the nav is `align-items: center` and its
+  tallest child is the "Get in Touch" pill at 41.81px, so 28.52 → 32 stays well
+  under it and the header height is unchanged.
+*/
+.nav .brand {
+  font-size: 1.25rem;
+  line-height: 2rem;
+}
+
+/* ---- buttons ------------------------------------------------------- */
+/*
+  NO LONGER REFERENCED. Every button on the site is now `.btn-poly` below.
+  Kept because this file is a port of the production sheet and these are its
+  original definitions — delete them if the polygon direction is final.
+*/
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border-radius: 999px;
+  font-weight: 500;
+  font-size: 1rem;
+  transition:
+    transform 0.25s,
+    box-shadow 0.25s,
+    background 0.25s,
+    border-color 0.25s;
+  will-change: transform;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+}
+
+.btn-accent {
+  background: var(--accent);
+  color: #160a00;
+  box-shadow: 0 8px 30px -8px rgb(from var(--accent) r g b / 0.5);
+}
+
+.btn-accent:hover {
+  box-shadow: 0 14px 40px -8px rgb(from var(--accent) r g b / 0.7);
+}
+
+.btn-ghost {
+  border: 1px solid var(--border);
+  color: var(--fg);
+}
+
+.btn-ghost:hover {
+  border-color: var(--accent);
+}
+
+.btn-lg {
+  padding: 16px 36px;
+  font-size: 1rem;
+}
+
+/* ---- polygon button ------------------------------------------------ */
+/*
+  Frame and colours are the real values, read off the reference button's
+  computed style rather than eyeballed from a screenshot:
+
+    clip-path        polygon(10% 0, 100% 0, 100% 71%, 90% 100%, 0 100%, 0 30%)
+    border layer     rgba(152, 152, 152, 0.6)   at 0.06rem thick
+    fill             rgb(45, 45, 45)
+    text             rgb(152, 152, 152)
+    padding          0.81rem 1.75rem
+
+  Note the shape is NOT a symmetric octagon — only two OPPOSITE corners are
+  cut, top-left and bottom-right, which is what gives it the sheared look.
+
+  Typography deliberately differs from the reference (it uses JetBrains Mono
+  16px/400, uppercase in the markup): this button matches `.btn` next to it —
+  Inter 0.95rem/500, sentence case.
+
+  Two layers, no real border: `clip-path` clips a border away at the cut
+  corners. ::before is the outline colour and ::after sits 0.06rem inside it in
+  the fill colour, leaving the outline showing — the same trick the reference
+  does with a padded wrapper. Both share the identical polygon; because its
+  points are percentages they scale to each box, so no second set of values.
+*/
+.btn-poly {
+  position: relative;
+  isolation: isolate;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 12px var(--poly-pad-x);
+  /* 16px, not 0.95rem — that resolved to 15.2px. Even, per the house rule. */
+  font-size: 1rem;
+  font-weight: 500;
+  /*
+    Ba biến này là toàn bộ khác biệt giữa các variant.
+
+    The border layer carries the SAME colour as the fill that covers it, in both
+    states. With --poly-border-width at 0 the `::after` fill sits at inset 0 and
+    hides `::before` entirely — except on the 999px curve, where antialiasing
+    lets a sub-pixel sliver of it through. Any colour difference between the two
+    layers shows up there as a faint outline. Keeping them matched is what makes
+    "secondary at rest" and "primary on hover" render pixel-identical.
+  */
+  --poly-border: var(--poly-glass);
+  --poly-border-hover: #fff;
+  /* Độ dày viền. Đặt 0 là bỏ hẳn stroke — lớp fill khi đó phủ kín cả hình. */
+  --poly-border-width: 0.06rem;
+  /* The reference button's own opaque fill — see --poly-glass. */
+  --poly-fill: var(--poly-glass);
+  --poly-blur: var(--poly-glass-blur);
+  /*
+    White at rest. The buttons sit over the hero clip, which runs bright through
+    the snow and aurora frames — the old muted grey sank into it. `.btn-poly-light`
+    overrides this with the dark label it needs on white.
+  */
+  color: var(--fg);
+  white-space: nowrap;
+  transition:
+    color 0.3s,
+    transform 0.2s;
+  will-change: transform;
+}
+
+.btn-poly::before {
+  inset: 0;
+  background: var(--poly-border);
+}
+
+.btn-poly::after {
+  inset: var(--poly-border-width);
+  background: var(--poly-fill);
+  backdrop-filter: var(--poly-blur, none);
+}
+
+.btn-poly::before,
+.btn-poly::after {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  transition: background 0.3s;
+  border-radius: var(--poly-radius);
+}
+
+/*
+  48px for the in-page buttons: the two hero buttons and the closing
+  `.btn-poly-lg`. The vertical padding each one carries is left in place but no
+  longer decides anything — these are `display: inline-flex; align-items: center`,
+  so the label stays centred in the box whatever the padding says.
+
+  `.nav-cta` is deliberately NOT in this list; it takes 36px in its own block, and
+  setting its height there rather than overriding this rule keeps it out of the
+  source-order fights the rest of this file has had. It also has to be small: the
+  bar drops to 57px when scrolled, where a 48px CTA left only 4px of air.
+
+  Not applied to `.nav-toggle` or the hero's sound toggle: those are square icon
+  controls, not labelled buttons.
+*/
+.btn-poly {
+  height: 48px;
+}
+
+/*
+  The radius has to be on the element too, not only on the two pseudo layers.
+  While the shape was a `clip-path` polygon the element needed no radius — the
+  clip made the corners and the layers carried the rest. Now that the buttons are
+  pills again, any stroke painted by the ELEMENT (the `box-shadow: inset` the
+  stroke variants use) follows the element's own border-radius, and with none set
+  it came out a rectangle around a rounded fill.
+*/
+.btn-poly {
+  border-radius: var(--poly-radius);
+}
+
+.btn-poly-label {
+  position: relative;
+  z-index: 1;
+}
+
+/*
+  Arrow swap. The box clips, so on hover the visible arrow leaves through the
+  top-right corner while its twin arrives from the bottom-left. The travel is
+  diagonal to match the glyph's own 45 degree axis.
+*/
+.btn-poly-icon {
+  position: relative;
+  z-index: 1;
+  flex: 0 0 auto;
+  width: 16px;
+  height: 16px;
+  overflow: hidden;
+}
+
+.btn-poly-icon svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.45s cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+.btn-poly-icon svg:last-child {
+  transform: translate(-110%, 110%);
+}
+
+.btn-poly:hover .btn-poly-icon svg:first-child,
+.nav-cta:hover .btn-poly-icon svg:first-child {
+  transform: translate(110%, -110%);
+}
+
+.btn-poly:hover .btn-poly-icon svg:last-child,
+.nav-cta:hover .btn-poly-icon svg:last-child {
+  transform: translate(0, 0);
+}
+
+.btn-poly:hover {
+  color: var(--fg);
+  transform: translateY(-2px);
+}
+
+.btn-poly:hover::before {
+  background: var(--poly-border-hover, rgb(152 152 152 / 0.9));
+}
+
+/* ---- hero buttons --------------------------------------------------- */
+
+/*
+  Both pills at one width, so the pair reads as a set rather than as two labels
+  that happen to be a similar length. `.hero-actions` already wraps, so on a
+  window too narrow for 168 + 16 + 168 they stack instead of overflowing.
+*/
+.hero-actions .btn-poly {
+  width: 168px;
+}
+
+/* ---- hero primary: pill with a disc on the end ---------------------- */
+
+/*
+  The arrow moves out of the label's line and into a disc at the end of the pill.
+
+  `.btn-poly-light` ONLY — "See our work" beside it keeps the hollow pill and the
+  inline arrow every other button on the site uses, so the two read as primary
+  and secondary rather than as a matched pair.
+
+  The DISC IS THE ICON BOX, grown from 16px to 44px, not a small box with a
+  spread shadow around it. 44 inside a 48px pill is the 2px of shoulder the
+  reference leaves top and bottom, which is also what the right padding is set to.
+
+  The arrow keeps its own 24px and is centred in that disc rather than filling
+  it: the base rule sizes the svg to the box, which at 44px drew an 18px glyph —
+  nearly twice the arrow every other button on the site uses.
+*/
+.hero-actions .btn-poly-light {
+  --poly-border-width: 0;
+  --poly-fill: #fafafa;
+  --poly-border: #fafafa;
+  --poly-border-hover: #fafafa;
+  /*
+    `space-between`, not the inherited `center`: the disc is anchored to the
+    pill's end, so the gap is what should absorb a change in width or label, not
+    the 2px of shoulder on the right.
+  */
+  justify-content: space-between;
+  padding-right: 2px;
+  padding-left: 24px;
+  color: #09090b;
+}
+
+/*
+  `--poly-border-hover` is normally white, which is the hover fill for a hollow
+  button and would be invisible here — matched to the fill above so the pill
+  holds one colour and only the lift reads as the hover.
+*/
+.hero-actions .btn-poly-light:hover {
+  color: #09090b;
+}
+
+.hero-actions .btn-poly-light .btn-poly-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  color: #fafafa;
+  background: #09090b;
+}
+
+.hero-actions .btn-poly-light .btn-poly-icon svg {
+  inset: 10px; /* (44 - 24) / 2 */
+  width: 24px;
+  height: 24px;
+}
+
+/*
+  And a longer throw for the swap. The base travel is 110% of the svg, which is
+  now 110% of a 24px arrow inside a 44px box — 26px, leaving the departing arrow
+  still showing in the corner. 200% is 48px, past the far edge.
+*/
+.hero-actions .btn-poly-light .btn-poly-icon svg:last-child {
+  transform: translate(-200%, 200%);
+}
+
+.hero-actions .btn-poly-light:hover .btn-poly-icon svg:first-child {
+  transform: translate(200%, -200%);
+}
+
+.hero-actions .btn-poly-light:hover .btn-poly-icon svg:last-child {
+  transform: translate(0, 0);
+}
+
+/* ---- hero ---------------------------------------------------------- */
+
+/*
+  The hero is PINNED: it stays where it is and the page scrolls over the top of
+  it, rather than scrolling away itself.
+
+  `sticky` rather than `fixed` so it still occupies its own 100svh of document
+  flow — fixed would collapse the page by a screenful and pull everything up.
+
+  Two consequences worth knowing. The parallax in Hero.tsx goes quiet on its own:
+  `useScrollScrub` derives its offset from `getBoundingClientRect().top`, which
+  stays 0 while an element is pinned, so the media and the copy hold still — which
+  is the point. And every later section has to be opaque, or the pinned hero shows
+  straight through them; that is the `.hero ~ *` rule below, not decoration.
+*/
+.hero {
+  /*
+    In flow, not pinned.
+
+    It used to be `sticky; top: 0`, with everything after it sliding over the
+    top. Philosophy is the section that did the sliding, and the effect was that
+    the hero stayed on screen underneath it for a full section's worth of
+    scrolling. Philosophy now simply follows the hero.
+
+    The z-index and the `.hero ~ *` floor below both stay: the sections after it
+    still need an opaque background of their own, and keeping the layer order
+    explicit costs nothing.
+  */
+  position: relative;
+  z-index: 0;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 var(--pad-x);
+  overflow: hidden;
+}
+
+/*
+  Everything after the hero scrolls over it, so it all needs a floor. Only
+  `.why-stage` had a background before; the others were transparent and inherited
+  the body's, which works fine over a static hero and not at all over a pinned one.
+*/
+.hero ~ * {
+  position: relative;
+  z-index: 1;
+  background: var(--bg);
+}
+
+/*
+  Philosophy pins, and Team scrolls over it.
+
+  The section is taller than the window, so `top: 0` is wrong: it would pin the
+  instant the top edge arrived and five of the six principles would never scroll
+  into view.
+
+  `bottom: 0` is wrong too, and less obviously. Sticky is a TWO-SIDED
+  constraint, not a floor — with `bottom: 0` the browser shifts the element UP
+  as well, to bring its bottom edge to the window's, and it does that from the
+  moment the section is in range of its containing block.
+
+  So the offset is a negative `top` of `window height - section height`, which
+  puts the pin exactly where the section's bottom edge meets the window's
+  bottom. That depends on both heights, so Philosophy.tsx measures it and writes
+  `--phil-stick`. The fallback is deliberately far off-screen: until the real
+  value lands the section must not pin at all, and `0px` would flash it to the
+  top of the page on first paint.
+
+  No z-index here on purpose. It keeps the 1 from `.hero ~ *`, `.team` carries
+  the same 1, so document order decides and `.team` — later — paints on top.
+  Raising this one would put the pinned section over the thing meant to cover it.
+*/
+.phil {
+  position: sticky;
+  top: var(--phil-stick, -9999px);
+}
+
+.hero-media {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.hero-video {
+  /*
+    The clip's own colour, darkened.
+
+    `grayscale(1)` used to lead this chain, but only ever as preparation for a
+    warm `multiply` wash that sat on top — it cleared the footage's cold blue-grey
+    so the ink had something neutral to tint. Both are gone now, and what is left
+    is the grade that made the white headline readable: contrast opens the
+    midtones back up, brightness takes the whole thing down.
+  */
+  filter: contrast(1.5) brightness(0.62);
+}
+
+
+.hero-video,
+.hero-fallback {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* The ember canvas sits BEHIND the video and shows only while it loads. */
+.hero-fallback {
+  z-index: -1;
+  transition: opacity 0.6s;
+}
+
+/*
+  Pinned to `.hero`, NOT inside `.hero-media` — see the note in Hero.tsx. The
+  geometry is unchanged (`.hero-media` is also inset 0 of `.hero`), but the scrim
+  no longer travels with the parallax, so its opaque bottom stop always lands on
+  the hero's bottom edge and meets the next section seamlessly.
+
+  z-index 1 puts it over the clip (media is 0) and under the copy and the scroll
+  cue (both 2). The sound toggle moved out with it and keeps its own z-index 6.
+*/
+.hero-scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  /*
+    The 35% stop used to be 0.35 — the thinnest point of the scrim — and the
+    headline sits at 27–36% with the subhead at 39–48%, so the copy was landing in
+    exactly the weakest part of it. Sampling the clip inside the headline band
+    across seven frames gives luminance up to 1.0 (bare white snow), and against
+    that the white headline measured 2.30:1.
+
+    It now holds ~0.66 all the way down. The old 0.72-at-78% and opaque-at-100%
+    stops were there to blend the hero's bottom edge into the next section, and
+    there is no such edge any more — the hero is pinned and the next section
+    covers it.
+
+    0.6 → 0.74, together with the clip's own `brightness(0.62)`, takes the hero's
+    displayed luminance from 0.094 to 0.022 — under a quarter of where it started
+    — and the white headline from 6.29:1 to 13.45:1 against the 95th-percentile
+    bright pixel actually behind it, worst of eight frames across the loop.
+    Measured on the composite — filter, then the multiply tint, then this — not on
+    the clip on its own.
+
+    `contrast` goes UP as `brightness` comes down, and that is the whole trick.
+    Brightness alone compresses everything toward black and the footage turns to
+    mud; pulling contrast the other way keeps the highlights separated from the
+    shadows inside a much smaller range. Tonal range still falls — 0.051 to 0.019
+    over this move — so there is a floor somewhere below here where the hero stops
+    being footage and becomes a dark rectangle. The page background sits at 0.003,
+    so at 0.022 the clip is still reading about eight times brighter than paper.
+
+    This alone did NOT fix the accent word, and the reason is worth keeping: the
+    accent was #C2603A then, whose lightness sits near mid grey, so as the backdrop
+    darkened past it the contrast fell THROUGH 1.0 before recovering — 1.74 at the
+    old 0.356, 1.06 at 0.55, 1.27 here. No alpha rescued it. Lightening the accent
+    did. The accent has since been set back to orange-500 by choice; at this scrim
+    it reads 3.41:1 on a typical frame and 1.90:1 on the brightest. See
+    --color-accent in globals.css for the full comparison — that ceiling is the
+    design's, not this scrim's.
+
+  */
+  background:
+    linear-gradient(
+      180deg,
+      rgb(9 9 11 / 0.76) 0%,
+      rgb(9 9 11 / 0.74) 40%,
+      rgb(9 9 11 / 0.74) 100%
+    ),
+    radial-gradient(120% 80% at 70% 30%, transparent, rgb(9 9 11 / 0.55));
+}
+
+/* No padding here — the gutter belongs to `.hero`. No max-width either: the
+   column is the gutter, everywhere. See the note on `.section`. */
+.hero-inner {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+}
+
+.hero-title {
+  font-family: var(--font-disp);
+  font-weight: 700;
+  line-height: 0.98;
+  letter-spacing: -0.03em;
+  font-size: var(--text-h-hero);
+  margin-bottom: 28px;
+}
+
+.hero-title .line {
+  display: block;
+  overflow: hidden;
+}
+
+.hero-title .w {
+  display: block;
+  will-change: transform;
+}
+
+.hero-sub {
+  font-size: var(--text-sub);
+  /*
+    Capped at 18px. 24px pushed this line to wrap, dropping "to launch." onto a
+    line of its own — the orphan this copy was written to avoid. Anything at or
+    below 20px holds it on one line, so there is headroom here.
+  */
+  color: #d4d4d8;
+  /*
+    720px, not production's 620px. The sentence measures 685px on one line at
+    the desktop 22.4px, so a 620px cap broke it and left "launch." alone on a
+    second line. 720 clears it with slack for font-metric variation.
+
+    `pretty` covers the narrower viewports where the parent is smaller than the
+    sentence and it has to wrap anyway — it stops the browser leaving a
+    single-word last line there too. Unsupported browsers just ignore it.
+  */
+  max-width: 720px;
+  text-wrap: pretty;
+  margin-bottom: 36px;
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.hero-cue {
+  position: absolute;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.75rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+  transition:
+    opacity 0.4s,
+    visibility 0.4s;
+}
+
+/*
+  Hidden while the page is scrolled down, back when it returns to the top — see
+  `useScrolled` in Hero.tsx.
+
+  `visibility: hidden` alongside the fade, not opacity alone: an opacity-0 cue
+  still answers find-in-page and still sits in the hit-testing tree over the
+  clip. The transition covers both, so it fades in and out rather than blinking.
+*/
+.hero-cue.is-gone {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.hero-cue span {
+  width: 1px;
+  height: 44px;
+  background: linear-gradient(var(--accent), transparent);
+  animation: cue 1.9s ease-in-out infinite;
+}
+
+@keyframes cue {
+  0%,
+  100% {
+    transform: scaleY(0.4);
+    opacity: 0.4;
+    transform-origin: top;
+  }
+  50% {
+    transform: scaleY(1);
+    opacity: 1;
+    transform-origin: top;
+  }
+}
+
+/* Headline: "Output" is struck through, then REPLACED in place by "Outcomes". */
+/*
+  The swap. `.t-strike` collapses its own width to nothing as `.t-add` opens to
+  its natural width, so the new word takes the old one's position rather than
+  arriving beside it.
+
+  Same recipe as `.t-add` below — inline-block, overflow hidden, nowrap,
+  `vertical-align: bottom` — and the last part is load-bearing, not decoration:
+  an inline-block with `overflow: hidden` takes its bottom margin edge as its
+  baseline instead of its text baseline, which drops the word relative to "for"
+  next to it. `.t-add` already had to solve this; this mirrors it.
+
+  Both max-widths are set just above the words' measured widths — "Output" is
+  3.278em and "Outcomes" 4.643em at this face. `.t-add` was capped at 7em, so a
+  third of its open ran after the text had already finished arriving; tightening
+  both makes the two halves of the swap the same length of visible motion.
+
+  `overflow: hidden` also decided where the rule ends: it used to reach 0.04em
+  past each end of the word and get clipped there. The rule is now flush with the
+  box by declaration rather than by clipping, so its rounded caps survive.
+*/
+.t-strike {
+  position: relative;
+  display: inline-block;
+  max-width: 3.6em;
+  overflow: hidden;
+  vertical-align: bottom;
+  white-space: nowrap;
+  /*
+    0.3s, and quick on purpose: the replacement word is still hidden while this
+    runs, so there is nothing visible to hurry. All it does is settle the layout
+    before the typing starts — and the typing's delay below has to equal it.
+  */
+  transition:
+    max-width 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.22s ease;
+  /*
+    One source of truth for the rule and for the gap it runs through.
+
+    --strike-y is measured from the top of the INK box, not from `.t-strike`'s
+    own box. The two differ by the half-leading: `.t-strike` is 1.278em tall
+    (the h1's line-height) while the ink box is 0.980em. Both are fixed multiples
+    of the font size — verified identical at 36px and at 72px — so these em
+    values hold at every step of the type scale, which a % never would.
+  */
+  --strike-h: 0.055em;
+  --strike-y: 0.5375em;
+  --strike-air: 0.05em;
+}
+
+/*
+  The gap the rule passes through, cut out of the letters.
+
+  Two mask layers, the second subtracted from the first: layer one keeps the
+  whole word, layer two is the horizontal band to remove. The band starts at zero
+  width and widens to 100% on the same curve and duration as the rule's scaleX,
+  so the gap opens left-to-right as the rule draws. A static gap would leave a
+  slit across "Output" for the 1.9s before the strike fires, which reads as a
+  rendering fault rather than a design.
+
+  `inline-block` gives the mask a box to resolve against. It costs nothing: the
+  word's position and the position of "Outcomes" beside it are unchanged to the
+  pixel.
+*/
+.t-ink {
+  display: inline-block;
+  mask-image:
+    linear-gradient(#000, #000),
+    linear-gradient(
+      to bottom,
+      transparent 0 calc(var(--strike-y) - var(--strike-air)),
+      #000 calc(var(--strike-y) - var(--strike-air))
+        calc(var(--strike-y) + var(--strike-h) + var(--strike-air)),
+      transparent calc(var(--strike-y) + var(--strike-h) + var(--strike-air))
+    );
+  mask-repeat: no-repeat;
+  mask-size:
+    100% 100%,
+    0 100%;
+  mask-composite: subtract;
+  /* Matches `.t-strike::after` below — the gap and the rule draw as one. */
+  transition: mask-size 0.6s cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+.t-strike.struck .t-ink {
+  mask-size:
+    100% 100%,
+    100% 100%;
+}
+
+.t-strike::after {
+  content: '';
+  position: absolute;
+  /*
+    Flush with the word, not 0.04em past each end as it was.
+
+    That overhang has to go for the rounded caps to exist at all: `.t-strike`
+    carries `overflow: hidden` (it needs it to collapse during the swap), so
+    anything outside the box is clipped — and the clip would land exactly on the
+    two caps, cutting them back to square. The line is ~5px shorter for it.
+  */
+  left: 0;
+  right: 0;
+  top: 54%;
+  height: var(--strike-h);
+  /* Pill, not a 2px corner: the caps read as round at this thickness. */
+  border-radius: 999px;
+  /*
+    White at 60%, read from --fg so it tracks the headline it strikes.
+
+    The alpha is doing different work than it used to. Before the word was cut
+    open, white-on-white hid the line wherever it crossed a glyph and 60% only
+    governed the gaps between letters. Now the whole line sits on the clip, so the
+    alpha is what keeps it from competing with the headline itself.
+  */
+  background: rgb(from var(--fg) r g b / 0.6);
+  transform: scaleX(0);
+  transform-origin: left;
+  /*
+    REPLACE_AT in AnimatedHeadline.tsx is STRIKE_AT + this duration + a 1s hold.
+    Change this number and REPLACE_AT has to move with it, or the word swap starts
+    while the line is still drawing.
+  */
+  transition: transform 0.6s cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+.t-strike.struck::after {
+  transform: scaleX(1);
+}
+
+.t-strike.swapped {
+  max-width: 0;
+  opacity: 0;
+}
+
+/*
+  The box for the replacement word. It no longer reveals anything — `.t-add em`
+  below does that — it only reserves the space.
+
+  This is what fixes the direction. The box was doing the reveal by growing from
+  0, and because "Output" collapses at the same time its left edge travelled
+  237px leftward while it grew (measured). Growing left-to-right while sliding
+  left reads as a word arriving from the RIGHT. Now the box opens and slides
+  while the word inside is fully clipped, so the motion is invisible, and the
+  typing happens at the settled position.
+
+  No opacity here: `max-width: 0` with `overflow: hidden` already hides it, and a
+  fade on top of the clip would soften the character edges the typing depends on.
+*/
+.t-add {
+  display: inline-block;
+  max-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  vertical-align: bottom;
+  /* Same clock as `.t-strike`'s collapse — they trade places. */
+  transition:
+    max-width 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+    margin-left 0.3s ease;
+}
+
+/*
+  The typing: one character at a time, each appearing whole.
+
+  This was a `clip-path` wipe with `steps()`. It looked broken, and the reason is
+  structural: steps() splits the WIDTH into equal slices, while glyph advances are
+  not equal — "O" is far wider than "t" — so most boundaries fell mid-letter and
+  held a half-drawn glyph for a whole step. Cutting per character instead means a
+  letter is either there or it is not.
+
+  Each character resolves rather than snapping on: it lifts 0.14em, fades up, and
+  comes out of a 5px blur over 0.34s. The blur is what makes it read as settling
+  into focus instead of blinking. The rhythm is still one letter at a time — the
+  stagger is 90ms — so it stays typing rather than turning into a wipe.
+
+  `inline-block` is required, not stylistic: `transform` does nothing on a
+  non-replaced inline box. It does cost something, measured rather than assumed —
+  making each character its own atomic box widens the word from 334.3px to
+  335.6px, all of it in the "t". That is a static 1.3px on a 334px word, present
+  before and after the animation alike, so nothing shifts while it plays; it is
+  not free, just cheap. Drop the lift and the characters can go back to inline if
+  that 1.3px ever matters.
+
+  The 0.3s offset is the collapse above, and the two must stay equal: cut this and
+  characters start appearing while the word is still sliding into position, which
+  is the exact defect that made the reveal look like it came from the right.
+*/
+.t-char {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(0.14em);
+  filter: blur(5px);
+  transition:
+    opacity 0.34s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.34s cubic-bezier(0.22, 1, 0.36, 1),
+    filter 0.34s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.t-add.show .t-char {
+  opacity: 1;
+  transform: none;
+  filter: blur(0);
+  transition-delay: calc(0.3s + var(--i) * 0.09s);
+}
+
+/*
+  No gap to open once the word it followed has collapsed — otherwise "for" ends
+  up with the old 0.32em separator plus the literal space in the markup.
+*/
+.t-strike.swapped + .t-add.show {
+  margin-left: 0;
+}
+
+.t-add.show {
+  max-width: 5em;
+  margin-left: 0.32em;
+}
+
+/* ---- hero sound toggle --------------------------------------------- */
+
+.sound-toggle {
+  position: absolute;
+  right: var(--pad-x);
+  bottom: clamp(72px, 12vh, 104px);
+  z-index: 6;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border-radius: 50%;
+  cursor: pointer;
+  font: inherit;
+  font-size: 1rem;
+  line-height: 1;
+  color: var(--fg);
+  background: rgb(9 9 11 / 0.55);
+  border: 1px solid var(--border);
+  backdrop-filter: blur(8px);
+  transition:
+    border-color 0.25s,
+    background 0.25s,
+    transform 0.2s;
+}
+
+.sound-toggle:active {
+  transform: scale(0.92);
+}
+
+.sound-toggle:hover {
+  border-color: var(--accent);
+  background: rgb(9 9 11 / 0.75);
+}
+
+/* Emoji speaker glyphs, desaturated to sit in the monochrome UI. */
+.sound-toggle span {
+  filter: grayscale(1);
+}
+
+.sound-toggle .si-on {
+  display: none;
+}
+
+.sound-toggle.on .si-on {
+  display: inline;
+}
+
+.sound-toggle.on .si-muted {
+  display: none;
+}
+
+/* ---- sections ------------------------------------------------------ */
+
+/*
+  No max-width. The content column is defined by the gutter alone, and by nothing
+  else, so every block starts on the same vertical line at every viewport.
+
+  It used to cap at `--max` (1200px) and centre, and `--max` was read two different
+  ways: here it INCLUDED the gutter (border-box), while `.hero-inner` capped at
+  1200px INSIDE the gutter. With the old 52px gutter the two landed 68px apart and
+  nobody noticed. At 120px they land 120px apart, and the nav — which never capped
+  at all — sat 120px from both. Three blocks, three left edges:
+
+      viewport   nav    hero   section
+        1440     120     120       240
+        1680     120     240       360
+
+  Dropping the cap collapses all three onto the gutter. The trade is that the text
+  column now grows with the viewport, so the per-block measure caps
+  (`.section-head` at 760px, `.lede`) are what keep line length readable.
+*/
+.section {
+  position: relative;
+  padding: clamp(80px, 12vh, 152px) var(--pad-x);
+}
+
+.section-head {
+  margin-bottom: clamp(40px, 6vh, 72px);
+  max-width: 760px;
+}
+
+.kicker {
+  display: inline-block;
+  font-family: var(--font-disp);
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  font-size: 0.75rem;
+  color: var(--accent);
+  margin-bottom: 16px;
+}
+
+.section-head h2,
+.philv-head h2 {
+  font-family: var(--font-disp);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1.05;
+  font-size: var(--text-h-section);
+}
+
+.lede {
+  margin-top: 20px;
+  color: var(--muted);
+  font-size: 1rem; /* 16 — base */
+  max-width: 600px;
+}
+
+/* ---- generic scroll reveal ----------------------------------------- */
+
+/*
+  The sheet declares 30px but GSAP's `fromTo(el, {y:34}, …)` overrides it, so
+  34px is the distance that actually renders.
+
+  No transition here — production has none either, because the tween drives the
+  values frame by frame. `Reveal.tsx` does the same with the exact easeOutQuart
+  curve; a CSS transition on top would fight it. These two declarations are the
+  pre-JS state, and what reduced motion overrides.
+*/
+.reveal {
+  opacity: 0;
+  transform: translateY(34px);
+}
+
+.reveal.is-in {
+  opacity: 1;
+  transform: none;
+}
+
+/* ==========================================================================
+   PHILOSOPHY — heading + clip pinned together, clip scrubs to full-bleed
+   Collapsed from v5 → v7 → v8 → v9 → v10 → v11.
+   ========================================================================== */
+
+.philv-stage {
+  position: relative;
+  height: 220vh;
+  background: var(--bg);
+}
+
+.philv-sticky {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: block;
+  overflow: hidden;
+}
+
+.philv-head {
+  position: absolute;
+  top: clamp(40px, 7vh, 76px);
+  left: 0;
+  right: 0;
+  z-index: 3;
+  text-align: center;
+  margin: 0 auto;
+  max-width: 820px;
+  padding: 0 24px;
+  will-change: opacity, transform;
+}
+
+/*
+  Entrance: kicker, then heading, then lede — each rising as it fades in, 120ms
+  apart, so the block assembles top to bottom when the section comes into view.
+
+  Deliberately on the CHILDREN. The parent's own opacity and transform are driven
+  imperatively by Philosophy's scrub (it fades the whole block up and away as the
+  clip expands), so putting the entrance there too would have the two writing the
+  same properties. On the children they simply multiply: the block reveals on
+  arrival, then the parent carries it away on scroll.
+
+  The delay sits on `.is-in`, not on the base rule, so it only paces the way in.
+*/
+.philv-head > * {
+  opacity: 0;
+  transform: translateY(20px);
+  transition:
+    opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.philv-head.is-in > * {
+  opacity: 1;
+  transform: none;
+}
+
+.philv-head.is-in > :nth-child(2) {
+  transition-delay: 0.12s;
+}
+
+.philv-head.is-in > :nth-child(3) {
+  transition-delay: 0.24s;
+}
+
+.philv-head .kicker {
+  margin-bottom: 16px;
+}
+
+.philv-head .lede {
+  margin: 16px auto 0;
+  color: var(--muted);
+}
+
+/* Starting geometry only. JS scrubs width/height/top/radius/border-width to
+   full-bleed; these values are what it interpolates FROM. */
+.philv2-frame {
+  position: absolute;
+  left: 50%;
+  top: clamp(248px, 34vh, 332px);
+  transform: translateX(-50%);
+  width: min(1080px, 90vw);
+  height: min(460px, 42vw);
+  max-width: none;
+  aspect-ratio: auto;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  box-shadow: 0 40px 120px -40px rgb(0 0 0 / 0.85);
+  will-change: width, height, border-radius;
+}
+
+.philv2-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.philv2-scrim {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(120% 120% at 50% 45%, transparent 42%, rgb(9 9 11 / 0.4)),
+    linear-gradient(
+      180deg,
+      rgb(9 9 11 / 0.15),
+      transparent 28%,
+      transparent 72%,
+      rgb(9 9 11 / 0.32)
+    );
+}
+
+.phil-label {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  transform: translate(-50%, -50%);
+  font-family: var(--font-disp);
+  font-weight: 500;
+  font-size: 0.75rem; /* 12 — xs */
+  white-space: nowrap;
+  color: #fff;
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: rgb(9 9 11 / 0.5);
+  border: 1px solid rgb(255 255 255 / 0.16);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 24px -8px rgb(0 0 0 / 0.55);
+  opacity: 0;
+  transition: opacity 0.8s ease;
+}
+
+.phil-label.shown {
+  opacity: 1;
+  animation: floatLbl 6s ease-in-out var(--d) infinite;
+}
+
+/* -50%/-50% is repeated in every keyframe on purpose: the centring uses the
+   same `transform` property, so omitting it here would un-centre the label
+   for the whole animation. */
+@keyframes floatLbl {
+  0%,
+  100% {
+    transform: translate(-50%, -50%);
+  }
+  50% {
+    transform: translate(-50%, calc(-50% - 12px));
+  }
+}
+
+/* ==========================================================================
+   TEAM
+   ========================================================================== */
+
+/*
+  This section is sized to be read in one screen, so its frame is tighter than
+  `.section`'s shared `clamp(80px, 12vh, 152px)` — which alone spent 204px of an
+  848px window — and tighter than `.section-head`'s shared closing gap.
+
+  64 above the heading and again between heading and cards — they were 56 / 32,
+  so the cards sat nearer the heading than the section's own edge and the block
+  read lopsided.
+
+  The closing gap is deliberately larger than those two: it is the seam against
+  the ruled careers band below, not part of this section's internal rhythm.
+*/
+/*
+  Exactly one screen, with the content centred in it.
+
+  Fixed padding could not do this. The band's height is driven by the cards,
+  which are driven by how the bullets wrap, which is driven by the window's
+  WIDTH — so at 1074px the section ran 893px against an 848px viewport while on
+  a wide window it left a deep dead strip under the cards. Any pair of numbers
+  is wrong at one end or the other.
+
+  `min-height` rather than `height`: on a short window the content still wins and
+  the section grows rather than overflowing. `svh`, not `vh`, so a mobile URL bar
+  sliding away does not resize the band under the reader.
+
+  No `padding-block` at all: the bands ARE the spacing, and block padding would
+  sit outside the top one — which is what left the heading 32px low of the centre
+  line between its rules. The `minmax(64px, …)` floors replace it, holding that
+  much clearance on a window with no spare band to distribute; where there is
+  spare, both floors are below the `1fr` share and the two bands stay equal.
+
+  Three rows, `1fr auto 1fr`: the heading's band, the ruled block, and an empty
+  band below it. The two `1fr`s are equal by construction, so the distance from
+  the section's edge down to the first rule matches the distance from the last
+  rule to the other edge — the heading lives INSIDE the top band instead of being
+  added on top of it.
+
+  Flex centring could not do this. It splits the free space evenly and then puts
+  the heading in the top half, which measured 401px against 278px at 1045px tall
+  and left the heading marooned. Counterweighting the bottom padding balanced it
+  but added the heading's height to the section's MINIMUM, so at 848px tall the
+  band grew to 908px and stopped fitting one screen. A `1fr` band gives up its
+  space when there is none to give.
+*/
+.team {
+  min-height: 90svh;
+  display: grid;
+  grid-template-rows: minmax(64px, 1fr) auto minmax(64px, 1fr);
+  padding-block: 0;
+}
+
+
+
+/*
+  Centred on both axes of the box its four nearest rules make.
+
+  Vertically: `align-self: center` in the grid's first band, which runs from the
+  section's top edge down to the first horizontal rule. The 48px bottom margin
+  had to go with it — a fixed gap on one side is exactly what stops a thing being
+  centred, and here it was also large enough to fill the band outright and pin
+  the heading to the top of it.
+
+  `padding-block` replaces that margin. Being symmetric it does not move the
+  centre line, and it keeps 24px of clearance off the rule on a window too short
+  to have any spare band to centre inside.
+
+  Horizontally: `margin-inline: auto` as well as `text-align`. `.section-head`
+  carries a `max-width: 760px`, so its box is narrower than the section's content
+  width — centring the text inside that box alone left the heading 37px left of
+  the centre line. And the cap goes entirely: it is a line-length guard for
+  body-width headings, and it was the only reason "wheel" dropped to a second
+  line once this one was centred over the full width.
+*/
+.team .section-head {
+  align-self: center;
+  margin-bottom: 0;
+  padding-block: 24px;
+  margin-inline: auto;
+  text-align: center;
+  max-width: none;
+}
+
+.team-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  /*
+    The rules that bracket the row, sitting ON the cards' own top and bottom
+    strokes rather than held off them — no `padding-block`, so the grid's edges
+    and the cards' edges are the same line, and each rule reads as that card
+    stroke carrying on out to the window.
+
+    Full-bleed by the usual pair: negative inline margins to reach past the
+    section's gutter, matching padding to put the content box — and therefore
+    both column tracks — back exactly where they were.
+  */
+  border-block: 2px solid var(--border);
+  margin-inline: calc(var(--pad-x) * -1);
+  padding-inline: var(--pad-x);
+}
+
+/*
+  The two vertical rules, at the outer edges of the pair.
+
+  They sit exactly on Lewis's left border and Runi's right border, and they run
+  the FULL height of the section — `inset-block: 0` on `.team`, so they reach the
+  divider at each end of the band with no padding stopping them short. The card's
+  own stroke and the rule are one line that simply carries on, which is the
+  vertical counterpart of what the horizontal rules do out to the window.
+
+  Hung off the section rather than the grid: on the grid they could only ever
+  reach as far as a hardcoded overhang, and a grid container's pseudo-elements
+  are grid ITEMS — left in flow they would take tracks of their own and push the
+  cards out. `left`/`right` are `--pad-x`, which is where the section's content
+  box, and so the cards' outer edges, begin.
+*/
+.team::before,
+.team::after {
+  content: '';
+  position: absolute;
+  inset-block: 0;
+  width: 2px;
+  background: var(--border);
+  pointer-events: none;
+}
+
+.team::before {
+  left: var(--pad-x);
+}
+
+.team::after {
+  right: var(--pad-x);
+}
+
+/* Portrait beside the copy, aligned to the top of it. */
+.member {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+  padding: 28px;
+  /*
+    A floor, not a fixed height. The card's height comes from whichever column is
+    taller, and on a wide window the copy stops wrapping and collapses to about
+    200px — leaving a card barely deeper than its own portrait while the section
+    around it sat half empty.
+
+    Growing the avatar instead was tried and was worse: at 200px it took enough
+    width off the copy column that the bullets wrapped far more, and the card went
+    the other way — 606px at a 1074px window, with the text crushed into a narrow
+    strip. Size the container, not the picture.
+  */
+  min-height: 320px;
+  /* Outlined, not filled, and square — same treatment as the project cards. */
+  background: transparent;
+  border: 2px solid var(--border);
+  /*
+    No horizontal stroke of its own: the two cards share the grid's rules, which
+    are the same line carried out to the window. Giving each card its own top and
+    bottom border stacked it under the rule — 4px thick across the cards, 2px
+    either side of them.
+
+    Restored below 900px, where the grid is one column and those borders are the
+    only thing closing each card. See the `max-width: 900px` block.
+  */
+  border-block-width: 0;
+  transition: background 0.3s;
+}
+
+/*
+  Hover lifts the fill rather than the border, since the card's horizontal stroke
+  now belongs to the grid.
+
+  A white card with dark copy was tried and reverted. It works, but every colour
+  inside has to be flipped with it — the standfirst, the bullets, their dots and
+  the role pill are all set explicitly and none of them inherits.
+*/
+.member:hover {
+  background: #1f1f23;
+}
+
+/*
+  Portrait slot — a fixed square, which is the whole reason this layout is a row.
+
+  Full-bleed across the top of the card, it had a fixed height but a width that
+  tracked the column, so `cover` scaled the drawing to the card's width and
+  cropped the difference out of the height. On a wider window that crop reached
+  past the chin and the faces were cut in half. A square that never changes size
+  cannot do that.
+
+  The figures are drawn head-and-shoulders in a 400x360 box, so a square crop
+  only loses a sliver of width; `object-position` lifts the frame slightly so the
+  head sits in the middle of the circle rather than the shoulders.
+*/
+.m-photo {
+  display: block;
+  flex: 0 0 160px;
+  width: 160px;
+  height: 160px;
+  object-fit: cover;
+  object-position: 50% 6%;
+  /*
+    A disc, and unfilled at rest. The portraits are cut out — RGBA with roughly
+    half the frame at alpha 0 — so the card shows through and the figure reads
+    as sitting on the card. The hover copy below fills it white; that change of
+    ground is part of the hover.
+
+    The stroke is a 2px `box-shadow` ring, not a border. A border sits INSIDE the
+    box — with `box-sizing: border-box` it was eating 2px off each edge and the
+    drawing rendered at 156px inside a 160px slot. A spread shadow is drawn
+    outside the border box, follows the radius exactly, and takes no layout, so
+    the portrait keeps the full 160.
+  */
+  border-radius: 999px;
+  box-shadow: 0 0 0 2px var(--border);
+}
+
+/*
+  The box the two portraits share.
+
+  It carries the 160px itself rather than leaving the images to size it: the
+  hover copy is taken out of flow, so without this the box would collapse to the
+  base image's height at the exact moment a layout read wanted it.
+*/
+.m-photos {
+  position: relative;
+  display: block;
+  flex: 0 0 160px;
+  width: 160px;
+  height: 160px;
+}
+
+/*
+  The second portrait, cross-faded in while the card is hovered.
+
+  `inset: 0` rather than a repeat of the 160px: the base image's 1px border sits
+  inside its own box, and matching the box rather than the number keeps the two
+  circles on exactly the same edge whatever the border does.
+
+  Opacity, not `display` or a `src` swap — both of those fetch or paint on the
+  first hover, which shows as a blink. This one is decoded with the page.
+*/
+.m-photo-hover {
+  position: absolute;
+  inset: 0;
+  /* The disc the resting portrait does without — see `.m-photo` above. */
+  background: #fff;
+  opacity: 0;
+  transition: opacity 0.3s var(--ease-out-expo);
+}
+
+.member:hover .m-photo-hover,
+.member:focus-within .m-photo-hover {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .m-photo-hover {
+    transition: none;
+  }
+}
+
+/* `min-width: 0` so long bullet lines wrap instead of stretching the flex item. */
+.m-body {
+  flex: 1;
+  min-width: 0;
+}
+
+/*
+  Portrait and role travel together, in their own column.
+
+  `flex: 0 0 auto` rather than a fixed 120px: the badge is the wider of the two
+  and a fixed width would clip a longer role. The avatar keeps its own 120px.
+*/
+.m-portrait {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/*
+  The role as a badge under the portrait — white fill, grey hairline, dark text.
+
+  It was accent-coloured text in the copy column, above the name. Moving it here
+  makes it read as a caption on the picture rather than as a second heading, and
+  frees the accent for the one thing on the card that still uses it.
+*/
+.m-role {
+  /*
+    Straddles the portrait's lower edge rather than sitting under it on a gap —
+    about half the badge over the circle, which is what makes it read as a
+    caption ON the picture instead of a second line of copy beneath it.
+
+    `position: relative` only to lift it above the image in paint order; without
+    it the badge is an earlier sibling's follower and the circle's white fill
+    would cover its lower half.
+  */
+  position: relative;
+  z-index: 1;
+  margin-top: -14px;
+  padding: 4px 10px;
+  border: 2px solid var(--bg);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--bg);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.m-body h3 {
+  font-family: var(--font-disp);
+  font-size: 1.875rem; /* 30 — 3xl */
+}
+
+.m-tag {
+  color: var(--muted);
+  font-size: 1rem; /* 16 — base */
+  margin: 6px 0 12px;
+}
+
+.m-body ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.m-body li {
+  position: relative;
+  padding-left: 16px;
+  color: #d4d4d8;
+  font-size: 1rem; /* 16 — base */
+}
+
+/*
+  A small grey dot. It was a rotated 2px-radius square in the accent colour —
+  four of them per card, eight on screen, all competing with the role pill for
+  the only other accent on the card.
+
+  No `transform` any more: that rotation is what made the square a diamond, and
+  rotating a circle does nothing but keep a compositing layer alive.
+*/
+.m-body li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 8px;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--muted);
+}
+
+.team-dots {
+  display: none;
+}
+
+/*
+  Narrow: the copy goes under the portrait instead of beside it.
+
+  The trigger is 1200px, not the 900px where `.team-grid` drops to one column.
+  Between those two the grid is still TWO columns, so each card is at its
+  narrowest of any width — that band is exactly where the row layout crushed the
+  bullets into a four-word-wide strip. Below 900 the card is full width and
+  stacking is simply the better reading order anyway.
+*/
+@media (max-width: 1200px) {
+  .member {
+    flex-direction: column;
+    gap: 16px;
+  }
+}
+
+/* ---- "Where they've built" career marquee -------------------------- */
+
+/*
+  `margin-top` is the gap this block needed while it sat under the team cards in
+  the same section. It has its own section now, whose padding provides that — see
+  `.careers .career-marquee` below.
+*/
+/* The thing that settles — see `Careers.tsx`. */
+.cm-scale {
+  transform-origin: center;
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cm-scale {
+    transform: none !important;
+  }
+}
+
+.career-marquee {
+  margin-top: clamp(40px, 6vh, 64px);
+  display: flex;
+  flex-direction: column;
+  /* The gap between the two tracks. 16 had them reading as one block. */
+  gap: 24px;
+  mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent);
+}
+
+.cm-label {
+  font-family: var(--font-disp);
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  font-size: 0.75rem;
+  /* Accent on the band's own black: measured 7.09:1, clear of the 4.5 this size
+     needs. It was `--muted`. */
+  color: var(--accent);
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+.cm-row {
+  overflow: hidden;
+}
+
+.cm-track {
+  display: flex;
+  align-items: center;
+  gap: 40px; /* steps up at lg/xl */
+  width: max-content;
+  animation: cmMove 34s linear infinite;
+}
+
+.cm-track.cm-rev {
+  animation: cmMoveRev 34s linear infinite;
+}
+
+.career-marquee:hover .cm-track {
+  animation-play-state: paused;
+}
+
+.cm-logo {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+}
+
+.cm-logo img {
+  height: 28px;
+  width: auto;
+  opacity: 0.5;
+  transition: opacity 0.3s;
+}
+
+.cm-logo:hover img {
+  opacity: 1;
+}
+
+/*
+  Ruled off top and bottom rather than filled — the band is the page background
+  with a hairline either side, not a panel. A grey slab fading out at both ends
+  was tried in place of the rules and removed.
+
+  `.section.careers` at (0,2,0) rather than a bare `.careers`: `.section` sets the
+  shared `padding` shorthand at (0,1,0), and `padding-block` has to beat it on
+  specificity rather than on source order alone.
+*/
+/*
+  Clipped, because the contents arrive at 1.12 and so overhang the band on every
+  side until they settle. The band's own borders are its edges and stay put.
+*/
+.section.careers {
+  overflow: hidden;
+  padding-block: 40px;
+  border-top: 2px solid var(--border);
+  border-bottom: 2px solid var(--border);
+}
+
+/*
+  The band sits directly above Work, and both would draw on the edge between
+  them — this bottom rule and `.work`'s own border-top — painting one 4px line.
+  Work's is the one that stays: it is on the section rather than on the pinned
+  stage, and slides away under the header the moment the pin starts.
+*/
+.section.careers:has(+ .work) {
+  border-bottom-width: 0;
+}
+
+/* Alone in its own section, so the section's padding is the whole gap. */
+.careers .career-marquee {
+  margin-top: 0;
+}
+
+/* -50% because the track renders its list twice — the seam is invisible. */
+@keyframes cmMove {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes cmMoveRev {
+  from {
+    transform: translateX(-50%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+/* ==========================================================================
+   TRACK RECORD — six pillars
+   Collapsed from v1 → v2 → v3 → v6 → v7.
+   ========================================================================== */
+
+/*
+  The V, set huge against the right edge and fading out to the left.
+
+  It hangs off `.work-stage`, not off `.work`. The section is now 3598px tall —
+  its own content plus the rail's travel spacer — and `cover` on a box that tall
+  scaled the square mark 5x: 3578px wide, of which a 20px slice fell inside the
+  709px box. The mark was still painting, just zoomed past all recognition. The
+  stage is the part of the section that is actually on screen (it sticks to the
+  header for the whole pin), so the mark rides with it and stays one screen tall.
+
+  Sized by HEIGHT (132% of the stage) rather than `cover`, so the section's
+  length can never feed back into the mark's scale again.
+
+  `z-index: -1` rather than 0 plus a z-index on every content block. In the paint
+  order a negative-z descendant sits ABOVE its parent's background and BELOW the
+  parent's in-flow content, which is exactly the layer wanted — and the stage is
+  `position: sticky`, so that stacking context already exists and the -1 cannot
+  escape to an ancestor.
+
+  `mix-blend-mode: screen` rather than cutting the artwork out: the source is a
+  white letter on black, and screen drops black to nothing while leaving white
+  intact. No alpha channel needed, and the 9KB file stays as it came. That is
+  also why the stage carries its own `--bg`: blending reads the backdrop inside
+  the stacking context only, and against a transparent one the artwork's black
+  would survive instead of dropping out.
+
+  Two separate fades, doing different jobs. `mask-image` is the left-to-right
+  ramp to zero. `opacity` is how present the mark is at its strongest point —
+  without it, screen puts the V at full white over a near-black section.
+*/
+.work-stage::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  /*
+    Flush right means flush with the LETTER, not with the file. Measured off the
+    source pixels: the artwork is 710x714 and the V's ink starts 111px in, so
+    15.63% of every frame is empty margin. Anchoring the box alone would put that
+    margin on the window edge and hold the letter 153px inside it.
+
+    The box is therefore given the artwork's exact geometry — `height: 132%` of
+    the stage, with `aspect-ratio` deriving the width — and then slid out by its
+    own width with `translate`. Percentages on `translate` resolve against the
+    element itself, which is the one unit here that tracks the mark's rendered
+    size; `right` would have needed the stage's height, which CSS cannot read.
+
+    `scaleX(-1)` mirrors the mark, so the margin that lands on the window edge is
+    the file's LEFT one — hence 15.63%, not the 16.20% on its right. The extra
+    64px carries it that much further, so the arm runs off the window instead of
+    stopping on it. That part is a flat px rather than more percentage — the
+    overhang should stay the same slice of the arm at every window size, and a
+    percentage of the mark would grow with the mark.
+
+    132% is over the stage on purpose: the tips of the arms crop against the top
+    and bottom edges, which is what makes it read as oversized rather than as a
+    placed logo.
+  */
+  top: 50%;
+  right: calc(var(--pad-x) * -1);
+  height: 132%;
+  aspect-ratio: 710 / 714;
+  transform: translate(calc(15.63% + 64px), -50%) scaleX(-1);
+  background: url('/assets/img/v-mark.webp') center / 100% 100% no-repeat;
+  mix-blend-mode: screen;
+  opacity: 0.24;
+  /*
+    Stops stay left-to-right and are NOT rewritten for the right-hand placement.
+    A mask is applied in the element's own space and the transform carries it
+    along, so `scaleX(-1)` flips the ramp with the artwork: the solid end lands
+    on the window edge and it fades away toward the middle of the page. 16% is
+    the dead margin the ramp holds solid across before it is on the letter at
+    all, and 84% is the ink's far edge, measured the same way.
+  */
+  mask-image: linear-gradient(
+    90deg,
+    #000 0%,
+    #000 16%,
+    rgb(0 0 0 / 0.4) 50%,
+    transparent 84%
+  );
+  pointer-events: none;
+}
+
+/*
+  The cards run as one horizontal rail that travels on vertical scroll.
+
+  The rail is the window; `.pillars` is the track inside it and is wider than the
+  page, so it must be clipped here — the section's own `overflow: hidden` is for
+  the V mark and sits too far out to help with the extra `--pad-x` gutters in
+  between.
+*/
+/*
+  The stage pins while the rail travels sideways.
+
+  `.work-track` is the scroll length: its own content plus `--work-travel`, the
+  exact distance the rail has left to move. `.work-stage` sticks to the header
+  for that distance, so the section holds still and only the cards move — and the
+  moment the last card lands, the track runs out and the page carries on.
+
+  The travel is a real sibling block, not `padding-bottom` on the track. Measured
+  in Chrome: a sticky element's constraint rectangle is its containing block's
+  CONTENT box, so padding adds no room to stick and the stage scrolled away with
+  the page — `stageTop` read -735 where it should have read 65. An empty block in
+  the flow extends the content box, which is the thing sticky actually reads.
+*/
+.work-spacer {
+  height: var(--work-travel, 0px);
+}
+
+/*
+  The section's opening space moves INSIDE the stage.
+
+  On `.section` it sat above `.work-track`, so by the time the stage pinned that
+  space had already scrolled past and the section pinned on its heading — the
+  divider above it was long gone. Inside the stage it pins with everything else,
+  which puts the section's top edge, and the rule that closes the band above it,
+  right against the header.
+
+  The value repeats `.section`'s own opening padding; the two have to match or
+  the section's height changes when the padding moves.
+*/
+.work {
+  /*
+    The band's opening rule, matching `.section.careers`.
+
+    It belongs on the SECTION, not on the pinned stage. On the stage it would
+    pin too, and then sit 2px under the header's own 1px rule — two stacked
+    lines for the whole length of the pin. On the section it reads as the
+    divider leading into the band and then scrolls away behind the header the
+    moment the pin starts, which leaves just the header's line while pinned.
+  */
+  border-top: 2px solid var(--border);
+  padding-top: 0;
+}
+
+.work-stage {
+  position: sticky;
+  top: var(--nav-h);
+  padding-top: clamp(80px, 12vh, 152px);
+  /* The backdrop the V blends against — see `.work-stage::before`. */
+  background: var(--bg);
+}
+
+.pillar-rail {
+  overflow: hidden;
+  /*
+    Full-bleed: the rail breaks out of the section's `--pad-x` so the cards are
+    clipped by the WINDOW, not by the gutter — otherwise a black band on each
+    side slices the outermost cards while they travel.
+
+    The negative margin takes it to both edges; `padding-left` puts the first
+    card back in line with the heading above it. Padding rather than an offset on
+    the track, because `overflow` clips at the padding box: a card may paint
+    across that padding as it travels, and only stops at the window.
+  */
+  margin-inline: calc(var(--pad-x) * -1);
+  padding-left: var(--pad-x);
+  /* Room for the wave's crests and troughs, which the cards ride into. */
+  padding-block: 56px;
+  margin-block: -56px;
+}
+
+.pillars {
+  display: flex;
+  gap: 24px;
+  width: max-content;
+  align-items: stretch;
+  will-change: transform;
+}
+
+.pillar {
+  /*
+    Width is sized so ONE card fills the middle of the window and its neighbours
+    show a third to a half each: the window, less the two gaps, divided by 1.8
+    (one whole card plus 0.4 of each neighbour). Capped so it does not become a
+    banner on a very wide screen.
+
+    `--scale` is written per frame by Pillars.tsx and is the only transform here —
+    the elastic `scaleY` rise this used to carry belonged to the column shape and
+    would have fought it for the same property.
+
+    The origin is the card's centre, so a shrinking card pulls in evenly from top
+    and bottom and stays on the row's mid-line. `bottom` put them all on a shared
+    baseline instead, which made the smaller ones hang low.
+  */
+  --pillar-w: clamp(280px, calc((100vw - 48px) / 1.8), 900px);
+  flex: 0 0 var(--pillar-w);
+  width: var(--pillar-w);
+  min-height: 420px;
+  transform: scale(var(--scale, 1));
+  transform-origin: center center;
+  will-change: transform;
+  position: relative;
+  overflow: hidden;
+  /*
+    Glass: the page's own black over a backdrop blur, the recipe from
+    `.contact-inner`. The two dials do different jobs and were tuned separately —
+    the blur is 6px rather than the contact card's 10px, so edges behind the card
+    stay legible as shapes; the black is 84%, so those shapes sit right back —
+    only a sixth of the backdrop survives. The V behind the stage reads THROUGH the card, faintly, which is
+    the point of the treatment rather than a leak.
+
+    Border stays 2px, not the contact card's 1px: every other stroke in this
+    section is 2px and a 1px card would read as a rendering slip next to them.
+    Corners stay square.
+  */
+  background: rgb(9 9 11 / 0.84);
+  backdrop-filter: blur(6px);
+  border: 2px solid rgb(255 255 255 / 0.14);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  /* Bottom padding is 24, not 32 like the other three: part of the 36px the
+     copy gave back to the image slot. */
+  padding: 32px 32px 24px;
+}
+
+
+.pillar .pillar-content {
+  position: relative;
+  z-index: 1;
+  margin-top: 0;
+}
+
+/*
+  The domain line — plain accent-coloured text, no pill.
+
+  It was a filled badge (black on orange, a rounded 999px pill). Dropped: at
+  three per card row the pills read as buttons and competed with `.pillar-open`,
+  which is the only thing in the card you can actually click.
+
+  `align-self: flex-start` stays. The card is a column flex container, so this
+  is blockified and stretched to the full 502px content box; without it any
+  future background or outline would run the whole card width again.
+
+  No `text-transform`, and no tracking with it. 0.13em is a fix for the tight
+  fit of all-caps; on sentence case it just pulls the word apart.
+*/
+.p-domain {
+  align-self: flex-start;
+  /* Body font — no `--font-disp`. The display face is for the title below it. */
+  font-size: 14px; /* xs -> sm; 12 read as fine print at this card size */
+  font-weight: 700;
+  /*
+    Orange on the card's glass, which composites to roughly #09090b: measured
+    7.09:1, well clear of the 4.5 this size needs. The old black-on-orange pill
+    was 6.97:1, so nothing is lost by dropping the fill.
+  */
+  color: var(--accent);
+  margin-bottom: 12px;
+}
+
+.pillar h3 {
+  font-family: var(--font-disp);
+  font-size: 30px; /* 2xl -> 3xl */
+  line-height: 1.15;
+  /*
+    This is the whole gap down to the description now. It used to sit under a
+    `min-height: 2.5em` on the title, reserving two lines so every description
+    started level across the six cards — but measured across widths, every title
+    fits one line from a 420px card up, so the reserve was 32px of dead air on
+    every card and only did real work below a 552px window, where one card is
+    centred at a time and there is nothing beside it to line up with.
+  */
+  margin-bottom: 8px;
+  letter-spacing: -0.01em;
+}
+
+.pillar p {
+  color: var(--muted);
+  font-size: 18px; /* sm -> lg */
+  line-height: 1.45;
+}
+
+/*
+  The image slot — a plain grey block until artwork arrives.
+
+  A fixed height, not an aspect ratio. 16:9 was tried and reverted: the slot's
+  width is the card less its two borders, 566 at a 570 card, so the ratio forced
+  it 318 tall and pushed the copy out of the window while the stage is pinned.
+  216 is the old 180 plus the 36px the tighter copy below gave back, which keeps
+  the card exactly the height it was before.
+*/
+/*
+  The card's entry point to a case study.
+
+  Two elements doing two jobs. `.pillar-open` is the thing you SEE on hover and
+  is decorative; `.pillar-link` is the thing you CLICK and is stretched over the
+  whole card, so the hit area is the card without the heading and copy having to
+  live inside an anchor.
+
+  The link only renders once a project has a `href` — see Pillars.tsx. The badge
+  shows either way, which is why it sits on the card's hover and not the link's.
+*/
+.pillar-open {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 2;
+  width: 48px;
+  height: 48px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: var(--fg);
+  color: var(--bg);
+  opacity: 0;
+  transform: translateY(-8px);
+  transition:
+    opacity 0.3s var(--ease-out-expo),
+    transform 0.3s var(--ease-out-expo);
+  pointer-events: none;
+}
+
+.pillar-open svg {
+  width: 20px;
+  height: 20px;
+}
+
+.pillar:hover .pillar-open,
+.pillar:focus-within .pillar-open {
+  opacity: 1;
+  transform: none;
+}
+
+.pillar-link {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pillar-open {
+    transition: none;
+    transform: none;
+  }
+}
+
+.pillar .pillar-visual {
+  position: relative;
+  height: 216px;
+  min-height: 216px;
+  flex: none;
+  /*
+    Full-bleed to the card's top and sides: negative margins cancel the card's
+    padding on those three edges. No `width` — the card is a column flex
+    container, so the item stretches to the content box and the negative margins
+    carry it the rest of the way out. A `width: 100%` would have pinned it to the
+    content box's width and left it 64px short on the right.
+  */
+  margin: -32px -32px 20px;
+  background: #27272a; /* zinc-800 */
+  z-index: 1;
+}
+
+.pv-svg {
+  width: 116px;
+  height: 84px;
+  max-height: 84px;
+  overflow: visible;
+}
+
+.ln {
+  stroke: rgb(250 250 250 / 0.5);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
+  color: var(--accent);
+}
+
+.ln.dim {
+  stroke: rgb(250 250 250 / 0.2);
+}
+
+.ln.acc {
+  stroke: var(--accent);
+}
+
+.draw {
+  stroke-dasharray: 240;
+  stroke-dashoffset: 240;
+  animation: dr 3.4s ease-in-out infinite;
+}
+
+@keyframes dr {
+  0% {
+    stroke-dashoffset: 240;
+  }
+  55% {
+    stroke-dashoffset: 0;
+  }
+  90% {
+    stroke-dashoffset: 0;
+  }
+  100% {
+    stroke-dashoffset: 240;
+  }
+}
+
+.spin-slow {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: sp 10s linear infinite;
+}
+
+@keyframes sp {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.sig-a {
+  animation: sg 2.4s ease-in-out infinite;
+}
+
+.sig-b {
+  animation: sg 2.4s ease-in-out 0.5s infinite;
+}
+
+@keyframes sg {
+  0%,
+  100% {
+    opacity: 0.12;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes orb {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(-4px, 5px);
+  }
+}
+
+/* White logo chip — Novaland and BTSE marks need a light backing. */
+.pv-chip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  border-radius: 12px;
+  padding: 8px 16px;
+  max-width: 152px;
+  box-shadow: 0 6px 18px -8px rgb(0 0 0 / 0.5);
+}
+
+.pv-chip img {
+  max-height: 48px;
+  max-width: 120px;
+  width: auto;
+  object-fit: contain;
+}
+
+.pillar .pv-yuzu {
+  position: relative;
+  width: 100%;
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pillar .pv-yuzu .pv-yuzu-mark {
+  position: relative;
+  z-index: 1;
+  height: 56px;
+  width: auto;
+  animation: orb 5s ease-in-out infinite;
+}
+
+.pv-yuzu .pv-yuzu-line {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  opacity: 0.45;
+}
+
+/* Poker: ace and king of spades, drifting out of phase. */
+.pv-cards {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.pcard {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 48px;
+  height: 68px;
+  border-radius: 8px;
+  background: #fafafa;
+  color: #0b0b0b;
+  font-family: var(--font-disp);
+  font-weight: 700;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 8px 8px;
+  box-shadow: 0 10px 22px -8px rgb(0 0 0 / 0.6);
+}
+
+.pcard .pc-r {
+  font-size: 1.125rem;
+  line-height: 1;
+}
+
+.pcard .pc-s {
+  font-size: 1rem;
+  margin-top: auto;
+  align-self: flex-end;
+}
+
+.pc-a {
+  transform: translate(-72%, -50%) rotate(-11deg);
+  animation: cardA 3.6s ease-in-out infinite;
+}
+
+.pc-k {
+  transform: translate(-28%, -50%) rotate(11deg);
+  animation: cardK 3.6s ease-in-out 0.35s infinite;
+}
+
+@keyframes cardA {
+  0%,
+  100% {
+    transform: translate(-72%, -50%) rotate(-11deg);
+  }
+  50% {
+    transform: translate(-72%, -56%) rotate(-13deg);
+  }
+}
+
+@keyframes cardK {
+  0%,
+  100% {
+    transform: translate(-28%, -50%) rotate(11deg);
+  }
+  50% {
+    transform: translate(-28%, -56%) rotate(13deg);
+  }
+}
+
+/* ---- partners ------------------------------------------------------ */
+
+/*
+  Its own band now, ruled top and bottom — the same construction as
+  `.section.careers`, including the (0,2,0) selector: `.section` sets the shared
+  `padding` shorthand at (0,1,0), so `padding-block` has to beat it on
+  specificity rather than on source order.
+*/
+.section.partners-band {
+  padding-block: 64px;
+  border-top: 2px solid var(--border);
+  border-bottom: 2px solid var(--border);
+}
+
+/*
+  The heading, centred over the wall.
+
+  `margin-inline: auto` and `max-width: none` for the same reason the team's
+  heading needs them: `.section-head` carries a 760px cap, which on a wide band
+  is narrower than the section and parks the centred text left of true centre.
+*/
+.partners-band .section-head {
+  margin-inline: auto;
+  margin-bottom: 40px;
+  max-width: none;
+  text-align: center;
+}
+
+.partners {
+  /* Alone in its own section, so the section's padding is the whole gap. */
+  margin-top: 0;
+  text-align: center;
+  /* Containing block for the wall's two outer verticals, below. */
+  position: relative;
+}
+
+/*
+  The wall's two outer verticals.
+
+  They land exactly on the wall's own left border and its last column's right
+  border, because both sit at `--pad-x`: that is where the section's content box
+  begins, and the wall fills it. So over the wall's height the two read as one
+  line.
+
+  Hung off `.partners` — the wrapper around the wall — rather than off the
+  SECTION. On the section they spanned the whole band, which meant they carried
+  on past the top of the wall, up through the heading, to the band's own top
+  rule: two hairlines sticking up out of nothing. Bounded by the wall, they
+  start and stop where the thing they are edging does.
+
+  Not off the grid itself: a grid container's pseudo-elements are grid ITEMS,
+  and `.pm-track::after` is already spending that on the empty eighth cell.
+*/
+.partners::before,
+.partners::after {
+  content: '';
+  position: absolute;
+  inset-block: 0;
+  width: 2px;
+  background: var(--border);
+  pointer-events: none;
+}
+
+/*
+  `.partners` fills the band's content box, so its own edges ARE the gutters —
+  no `--pad-x` offset here, unlike the section-level rules these replace.
+*/
+.partners::before {
+  left: 0;
+}
+
+.partners::after {
+  right: 0;
+}
+
+/* v15 turned this back into a static wall on desktop; the marquee survives
+   only below 760px. The wrapper keeps its name from the marquee days. */
+.partners-marquee {
+  overflow: visible;
+  /*
+    No `max-width` any more. A 980px cap centred the wall while the band's own
+    verticals stay at `--pad-x`, so on a wide window the rules stood well clear
+    of the logos instead of being their edges.
+  */
+  mask-image: none;
+}
+
+/*
+  A ruled wall of four columns, and its four outer strokes run to the extremes:
+  the horizontals out to the window, the verticals down the whole band.
+
+  The horizontals are this element's own `border-block`, with the full-bleed
+  trick the team grid uses — a negative inline margin carries the box to the
+  window, and matching padding puts the cells back on the gutter.
+
+  The verticals are `.partners-band::before/::after`, which are already at
+  `--pad-x` and already the full height of the section. So the wall draws no
+  left or right border of its own: the first column's left edge and the last
+  column's right edge ARE those two rules.
+
+  Internal strokes only, and each one owned by exactly one element — a border on
+  all four sides of every cell would paint 4px on each shared edge. `gap: 0` for
+  the same reason: a gap would split each stroke into two lines with a hole
+  between them.
+*/
+.pm-track {
+  display: grid;
+  /*
+    `minmax(0, 1fr)`, not `1fr`. A plain `1fr` is `minmax(auto, 1fr)`, so any
+    column whose logo is wider than its equal share pushes the track out and
+    steals the width from the others — measured, that gave 214/214/214/190.
+  */
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0;
+  width: auto;
+  margin-inline: calc(var(--pad-x) * -1);
+  padding-inline: var(--pad-x);
+  border-block: 2px solid var(--border);
+  animation: none;
+}
+
+/* The list is duplicated for the mobile marquee — hide the second copy here. */
+.pm-track .plogo:nth-child(n + 8) {
+  display: none;
+}
+
+.plogo {
+  width: auto;
+  height: 128px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 16px;
+  border-right: 2px solid var(--border);
+}
+
+/*
+  The one internal horizontal, owned by the top row. Putting it on every cell
+  would have doubled it against the track's own bottom border.
+*/
+.pm-track .plogo:nth-child(-n + 4) {
+  border-bottom: 2px solid var(--border);
+}
+
+.plogo img {
+  max-height: 56px;
+  /*
+    A cap, and a relative one for narrow cells.
+
+    `100%` alone let a wide logo run the full width of its cell, which on a big
+    window is 279px against a 128px cell — Perennial reached both rules. 176 is
+    the width these logos settle at when the band is 1074 wide, which is where
+    the wall was drawn. `min()` keeps the 100% behaviour once the cell is the
+    smaller of the two, so nothing overflows on a narrow window.
+  */
+  max-width: min(176px, 100%);
+  width: auto;
+  object-fit: contain;
+  opacity: 0.58;
+  transition: opacity 0.3s;
+}
+
+.plogo:hover img {
+  opacity: 1;
+}
+
+/* ==========================================================================
+   WHY VELOCITY — a title card over the clients band, then one 680vh sequence
+   ========================================================================== */
+
+/*
+  The clients band and the title card share this wrapper so the band can be
+  sticky inside it.
+
+  Sticky stops at its containing block, and as a direct child of the page the
+  band would stay pinned at the top of the screen for every section after it.
+  Bounded here, it releases the moment the card has finished covering it.
+*/
+.why-open {
+  position: relative;
+}
+
+/*
+  The band holds still at the top of the screen while the card rises over it.
+
+  z-index, not source order: the card comes AFTER the band in the document, but
+  a sticky element is positioned, so without an explicit layer the two paint in
+  the order they were written and the band would sit on top of the card it is
+  supposed to disappear behind.
+*/
+.why-open .partners-band {
+  position: sticky;
+  top: 0;
+  z-index: 0;
+}
+
+/*
+  A stage, not a panel: 220vh of scroll holding a 100vh card.
+
+  The extra 120vh is everything the card does while it is held — the question
+  travels to the corner over about 53vh and the copies drop over the remaining
+  79vh, which ends exactly where the card releases. As a plain 100vh panel it
+  was only ever full-screen for a single frame, since the moment its top reached
+  0 its bottom had already started leaving.
+*/
+.why-intro {
+  position: relative;
+  z-index: 1;
+  height: 220vh;
+  /* Opaque on purpose — this is the thing that covers the band. */
+  background: var(--bg);
+}
+
+.wi-sticky {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  /* The lower copies run off the right edge and the bottom. */
+  overflow: hidden;
+  background: var(--bg);
+}
+
+/*
+  Laid out where the question ENDS: the full gutter box, one gutter in from the
+  edge on every side, with the lines centred inside it. Everything before that is
+  a transform back down towards the middle of the screen, so the landing is a
+  position in the stylesheet rather than a number the last animation frame
+  happened to settle on.
+
+  Spanning the box rather than shrink-wrapping the word is what centres it. When
+  this was `left: var(--pad-x)` alone the block was only as wide as the word and
+  sat flush against the left gutter, so `text-align` had nothing to centre
+  against and the whole thing read as left-aligned with the right half empty.
+*/
+.wi-rows {
+  position: absolute;
+  left: var(--pad-x);
+  right: var(--pad-x);
+  top: var(--pad-x);
+  /*
+    Sized to the gutter box on BOTH axes, and the smaller of the two wins.
+
+    Width: "Why Velocity?" measures 6.52em in this face, so dividing the space
+    between the gutters by 6.6 is the largest size that still clears `--pad-x`
+    left and right, with about 1% left over for the fallback face being a shade
+    wider before the webfont lands.
+
+    Height: the finished block is 4.24em tall — one line for the white word plus
+    three copies at the 1.08em step in `WhyIntro.tsx`, whose last box ends at
+    4.24. Dividing the space between the same gutters top and bottom by that is
+    what keeps the cascade inside the card.
+
+    The height term is the one that was missing, and the type was sized off the
+    window's WIDTH alone: on a wide, short window — a laptop with the browser
+    half-height, say — 266px of type wanted 1250px of stack in a 740px card, and
+    the bottom copies were sliced off by the card's own edge.
+
+    Derived rather than stepped, because `--pad-x` is a fixed 120px from 861px
+    up: a plain `vw` size that cleared the gutters on a wide screen ran straight
+    through them at 900, and one that cleared them at 900 was lost on a wide one.
+  */
+  font-size: min((100vw - var(--pad-x) * 2) / 6.6, (100vh - var(--pad-x) * 2) / 4.24);
+  font-family: var(--font-disp);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  white-space: nowrap;
+  /*
+    Top centre: the move is vertical only now, so scaling has to happen about the
+    block's own middle or the word would drift sideways as it grows.
+  */
+  transform-origin: top center;
+  opacity: 0;
+  will-change: transform, opacity;
+}
+
+.wi-row {
+  margin: 0;
+  font: inherit;
+  letter-spacing: inherit;
+  /*
+    Centred on the block rather than flush to its left edge.
+
+    The copies are stroked and the front word is not, so the two do not paint to
+    the same width — left-aligning them lined up the left edges and let the
+    difference fall out of the right. Centring splits it, which on a column of
+    the same word is what reads as aligned.
+  */
+  text-align: center;
+  /*
+    Outline only: a transparent fill with the stroke drawn on top of it. The
+    stroke is the whole mark here, so it does not thin out with the type — 2px
+    at every size.
+  */
+  color: transparent;
+  -webkit-text-stroke: 2px #71717a; /* zinc-500 — "Why" and "?" in the echoes */
+  /*
+    The opaque bed is the whole trick. Without it the copies are five sets of
+    outlines drawn through one another; with it, the one nearer the front simply
+    covers its neighbour, and what is left of that neighbour is a clean band.
+  */
+  background: var(--bg);
+  will-change: transform;
+}
+
+/*
+  The marked run takes no colour of its own — the whole block is one grey.
+
+  This rule exists only to UNDO one. The site styles `em` as a solid accent mark
+  globally, so without it the run came out orange: filled orange on the front
+  row, and on an echo a filled orange word under a grey outline, which read as a
+  halo rather than as an outline. Inheriting hands the fill back to the
+  transparent one the stroke is drawn over.
+*/
+.wi-row em {
+  font-style: normal;
+  color: inherit;
+}
+
+/* The word itself, not an echo of it — and the thing the copies hide behind. */
+.wi-row.is-centre {
+  position: relative;
+  z-index: 5;
+  color: #fff; /* the line that is read; the echoes behind it stay zinc-500 */
+  -webkit-text-stroke: 0;
+}
+
+
+
+/* Stacked on the word until they are dropped down the gutter behind it. */
+.wi-copy {
+  position: absolute;
+  top: 0;
+  /* Both edges, so the box is the block's width and `text-align` has something
+     to centre against. */
+  left: 0;
+  right: 0;
+}
+
+/* ==========================================================================
+   WHY VELOCITY — one 680vh pinned sequence
+   Collapsed from v10 → v11 → v13.
+   ========================================================================== */
+
+.why-stage {
+  position: relative;
+  /*
+    780vh, not 680: the last screen is a tail the four rows hold through while
+    Contact rises over the panel. Every phase fraction in `Why.tsx` was scaled
+    by the same 679.5/779.5 so the sequence itself still happens where it did.
+  */
+  height: 780vh;
+  background: var(--bg);
+}
+
+.why-sticky {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.ws-stack {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  will-change: opacity;
+}
+
+/* ---- the drifting field of technology tiles -------------------------- */
+
+.ws-field {
+  --wf-tile: 96px; /* steps up at md/lg/xl/2xl */
+  --wf-gap: 16px; /* steps up at lg/xl/2xl */
+  /*
+    The cleared ellipse, as a share of the field. Wider and flatter on a phone,
+    where the headline takes a far larger share of the width than it does on a
+    desktop — the same 58% hole there would leave every line running out over
+    lit tiles.
+  */
+  --wf-hole-x: 88%; /* narrows at md */
+  --wf-hole-y: 42%;
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  display: flex;
+  justify-content: center;
+  /*
+    `flex-start`, not the default `stretch`: a stretched column is exactly as
+    tall as the field, which leaves it no slack to drift through — every column
+    sat at translateY(0) for the whole phase.
+  */
+  align-items: flex-start;
+  gap: var(--wf-gap);
+  overflow: hidden;
+  pointer-events: none;
+  /*
+    The hole the headline sits in.
+
+    A mask, not a gap left in the pattern: the columns drift, so a tile omitted
+    from the middle would carry its own clearance away within a few hundred
+    pixels of scroll. Masking clears the centre of the VIEWPORT instead — a
+    fixed place — so the headline keeps its room however far the field has
+    travelled, at any window size, and no tile has to be positioned around it.
+  */
+  mask-image: radial-gradient(
+    var(--wf-hole-x) var(--wf-hole-y) at 50% 50%,
+    transparent 0%,
+    transparent 52%,
+    #000 100%
+  );
+}
+
+.wf-col {
+  flex: 0 0 var(--wf-tile);
+  display: flex;
+  flex-direction: column;
+  gap: var(--wf-gap);
+  opacity: 0;
+  will-change: transform, opacity;
+}
+
+.wf-cell {
+  flex: 0 0 var(--wf-tile);
+  width: var(--wf-tile);
+  height: var(--wf-tile);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px; /* steps up at lg/xl */
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--card);
+  overflow: hidden;
+}
+
+/*
+  An empty disc: no ring and barely a fill, so it reads as the field breathing
+  rather than as a tile whose logo failed to load.
+*/
+.wf-cell.is-bare {
+  border-color: transparent;
+  background: rgb(250 250 250 / 0.03);
+}
+
+.wf-cell img {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  opacity: 0.9;
+}
+
+/*
+  JavaScript's mark and TypeScript's are solid squares with the letters knocked
+  out of them — that is the actual logo in both cases, not a bad export. At the
+  same size and opacity as the rest they cover about four times the ink, so they
+  stop reading as two of sixteen tiles and start reading as white boxes dropped
+  on the field.
+
+  Named rather than detected, because "is this mark a solid fill?" is not
+  something CSS can ask. Two exceptions, both visible here, both easy to delete
+  if either logo is ever replaced with an outline version.
+*/
+.wf-cell img[data-tech='JavaScript'],
+.wf-cell img[data-tech='TypeScript'] {
+  width: 62%;
+  height: auto;
+  border-radius: 8px;
+  opacity: 0.56;
+}
+
+/* The fallback for a technology with no obtainable mark — see `techLogos`. */
+.wf-cell span {
+  font-family: var(--font-disp);
+  font-weight: 500;
+  font-size: 0.875rem; /* 14 — sm */
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  text-align: center;
+  color: rgb(250 250 250 / 0.72);
+}
+
+/* ---- the headline the field is cleared for --------------------------- */
+
+.ws-build {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  padding: 0 var(--pad-x);
+}
+
+.tf-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  color: var(--accent);
+  font-family: var(--font-disp);
+  line-height: 1.1;
+  opacity: 0;
+  will-change: opacity;
+}
+
+.tf-badge b {
+  font-weight: 700;
+  font-size: 0.875rem; /* 14 — sm */
+}
+
+.tf-badge i {
+  margin-top: 2px;
+  padding-top: 2px;
+  border-top: 1px solid currentcolor;
+  font-style: normal;
+  font-weight: 400;
+  font-size: 0.625rem; /* 10 */
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.8;
+}
+
+.tf-head {
+  font-family: var(--font-disp);
+  font-weight: 700;
+  /*
+    One rung below `--text-h-section` at every width, and no `max-width`.
+
+    The mask clears an ellipse half the viewport wide; a line wider than that
+    runs out over tiles that are still lit, and a `max-width` in `ch` would
+    wrap the three authored lines into four. Sizing the type instead keeps the
+    longest line — "nothing slows the build" — inside the clearance at every
+    rung of the ladder.
+  */
+  font-size: 1.875rem; /* 30 — 3xl; steps up at md/lg/xl */
+  letter-spacing: -0.025em;
+  line-height: 1.08;
+}
+
+/* One line per entry in `whyContent.stack.headline`. */
+.tf-line {
+  display: block;
+}
+
+/* One word per span, each faded in on its own by scroll position. */
+.tf-w {
+  display: inline-block;
+  opacity: 0;
+  will-change: opacity;
+}
+
+.tf-head em {
+  font-style: normal;
+  color: var(--accent);
+}
+
+.ws-tagline {
+  position: absolute;
+  z-index: 2;
+  top: 50%;
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  transform: translateY(-50%);
+  max-width: 1100px;
+  padding: 0 24px;
+  font-family: var(--font-disp);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1.04;
+  font-size: var(--text-h-section);
+  opacity: 1;
+}
+
+.ws-tagline .wt1,
+.ws-tagline .wt2 {
+  opacity: 0;
+  will-change: opacity;
+}
+
+/* Four milestones live inside the pinned stage and replace the tagline. */
+.ws-cards {
+  position: absolute;
+  z-index: 3;
+  top: 50%;
+  left: 0;
+  right: 0;
+  transform: translateY(-50%);
+  padding: 0 var(--pad-x);
+}
+
+/*
+  One milestone per row, stacked and ruled, rather than four cards side by side.
+
+  The TRACKS live here and the rows borrow them with `subgrid`, because the
+  outer two columns are sized to their content: "CTO-Level" is half as wide
+  again as "5 Mo.", so four independent grids gave every row a different metric
+  column and the descriptions started at a different x in each one. One set of
+  tracks is what lines the four rows up.
+*/
+.why-grid {
+  display: grid;
+  grid-template-columns: auto minmax(0, 0.9fr) minmax(0, 1.4fr) auto;
+  column-gap: clamp(24px, 3vw, 56px);
+}
+
+/*
+  Four columns: step number, title, description, metric.
+
+  `minmax(0, …)` on the two flexible tracks above and not `1fr` alone — a bare
+  `1fr` is `minmax(auto, 1fr)`, whose floor is the content's own minimum width,
+  so a long unbroken description would push the metric off the end instead of
+  wrapping.
+
+  The outer two tracks are `auto`: the step number and the metric are both as
+  wide as their own type and neither should be given room it will not use.
+*/
+.why-stat {
+  position: relative;
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: subgrid;
+  align-items: center;
+  /*
+    A floor on the row's height, not more padding.
+
+    The four descriptions do not wrap to the same number of lines — two run to
+    three and two to two — so padding alone gave rows of 139, 139, 118 and 120.
+    A minimum makes them equal AND taller, and `padding-block` stays as the
+    floor for anything that outgrows it.
+
+    Viewport-relative so the block keeps filling the pinned panel without
+    overflowing a short one: at 21vh four rows come to about 84% of the window.
+  */
+  min-height: clamp(132px, 21vh, 200px);
+  padding-block: 28px;
+  /*
+    Breathing room inside the row, so the step number is not flush against the
+    hover marker and the metric is not flush against the right edge.
+
+    On the ROW rather than on the container: the border is outside the padding,
+    so the rules still run the full width and the marker still sits on the row's
+    own edge — only the four columns move in. Every row carries the same
+    padding, so they stay aligned with one another.
+  */
+  padding-inline: 32px;
+  border-top: 2px solid var(--border);
+  /*
+    `.why-sticky` centres everything in the pinned stage, which is right for the
+    tagline it replaces and wrong for a row: it left every column floating in
+    the middle of its own track.
+  */
+  text-align: left;
+}
+
+/* The last row needs its own closing rule; the rest borrow the next row's. */
+.why-stat:last-child {
+  border-bottom: 2px solid var(--border);
+}
+
+/*
+  The marker on the hovered row, drawn rather than bordered: a `border-left`
+  would be inside the box and shift all four columns 2px right on hover.
+*/
+.why-stat::before {
+  content: '';
+  position: absolute;
+  inset-block: 0;
+  left: 0;
+  width: 2px;
+  background: var(--accent);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+}
+
+.why-stat:hover::before {
+  opacity: 1;
+}
+
+/*
+  The step number. Large enough to anchor the row and dim enough to stay behind
+  the title — it is a position in a list, not a thing to read.
+*/
+/*
+  Every cell names its ROW as well as its column.
+
+  Auto-placement fills row by row and never moves the cursor backwards, so with
+  columns alone the DOM order — step, metric, title, description — put the step
+  and the metric on row 1 and pushed the title and its sentence onto a second
+  row underneath them. Four explicit `grid-row: 1`s are what keep the four
+  columns on one line.
+*/
+.why-step {
+  grid-column: 1;
+  grid-row: 1;
+  font-family: var(--font-disp);
+  font-style: normal;
+  font-weight: 700;
+  font-size: 3rem; /* 48 — 5xl; steps up at lg/xl */
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: rgb(250 250 250 / 0.18);
+  font-variant-numeric: tabular-nums;
+}
+
+.ws-cards .why-stat {
+  opacity: 0;
+  will-change: opacity, transform;
+}
+
+/*
+  The metric: the end of its row, and the thing the row is about.
+
+  `nowrap` because the column is sized to its content — "CTO-Level" breaking
+  across two lines would drag the whole row's height with it.
+*/
+.why-stat b {
+  grid-column: 4;
+  grid-row: 1;
+  font-family: var(--font-disp);
+  font-weight: 700;
+  font-size: 1.875rem; /* 30 — 3xl; steps up at lg/xl */
+  color: var(--accent);
+  letter-spacing: -0.02em;
+  line-height: 1;
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* The row's title. */
+.why-stat span {
+  grid-column: 2;
+  grid-row: 1;
+  font-family: var(--font-disp);
+  font-weight: 700;
+  font-size: 1.5rem; /* 24 — 2xl; steps up at lg/xl */
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  transition: color 0.4s ease;
+}
+
+.why-stat:hover span {
+  color: var(--accent);
+}
+
+.why-stat p {
+  grid-column: 3;
+  grid-row: 1;
+  color: var(--muted);
+  font-size: 1rem; /* 16 — base; steps up at lg */
+  line-height: 1.5;
+}
+
+/* ==========================================================================
+   CONTACT — full-bleed video bed + glass card (v12)
+   ========================================================================== */
+
+/*
+  A pinned stage, the same construction as `.why-stage`: the section is taller
+  than the screen and holds a sticky child one screen tall, so scrolling inside
+  it moves the sequence rather than the page. 220vh gives 120vh of travel — the
+  whole run of arcs and copy — before anything moves on.
+
+  Its own floor: everything after the hero scrolls over it, and this section no
+  longer has a clip of its own to cover the gap.
+*/
+/*
+  It opens OVER the Why panel rather than following it.
+
+  The negative top margin pulls this section up by 80vh, so its last-but-one
+  screen of scroll is spent rising across a panel that is still pinned behind
+  it. Nothing is pushed — the four rows hold where they are and this simply
+  covers them, which is why the background has to be opaque and the layer has to
+  be above.
+
+  80vh and not more: the rows finish at 0.863 of the Why stage and this section's
+  top edge enters the window at 0.897, so the two never contend. The Why stage
+  grew by 100vh to make that tail; see `.why-stage`.
+*/
+.contact {
+  position: relative;
+  z-index: 2;
+  height: 220vh;
+  max-width: none;
+  margin-top: -80vh;
+  background: var(--bg);
+}
+
+.contact-sticky {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 0 var(--pad-x);
+  overflow: hidden;
+}
+
+/*
+  The light in the middle that the arcs read as the edge of.
+
+  Warm, wide and very low — it is the reason for the arcs rather than a panel of
+  its own, so it has to stay under the threshold where it reads as a colour.
+  Centred at 42% down, which is where the headline sits rather than where the
+  box does.
+
+  `--glow` is written per scroll frame by Contact.tsx so it arrives with the
+  rings; a static glow would give the copy a warm cast before anything had
+  shown up to explain it.
+*/
+.contact-sticky::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: var(--glow, 0);
+  background: radial-gradient(
+    52% 44% at 50% 42%,
+    rgb(251 146 60 / 0.07) 0%,
+    rgb(249 115 22 / 0.03) 46%,
+    transparent 74%
+  );
+}
+
+/*
+  The arcs. Stretched to the section rather than fitted to it — see the note in
+  Contact.tsx — so the box is simply the whole section.
+*/
+.contact-rings {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/*
+  `r` and opacity are written per scroll frame by Contact.tsx — no transition, or
+  every value would arrive late and the arcs would lag the scroll.
+
+  `non-scaling-stroke` because the SVG is stretched to the section by
+  `preserveAspectRatio="none"`, which would otherwise stretch the stroke with it
+  and make the sides of each arc thicker than its top.
+*/
+.contact-rings circle {
+  opacity: 0;
+  vector-effect: non-scaling-stroke;
+}
+
+/*
+  No panel. The card was a 700px blurred box with a hairline — it existed to lift
+  the copy off a busy clip, and the clip is gone.
+*/
+.contact .contact-inner {
+  position: relative;
+  z-index: 2;
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+.contact .contact-inner h2 {
+  font-family: var(--font-disp);
+  font-weight: 700;
+  font-size: var(--text-h-section);
+  letter-spacing: -0.025em;
+  line-height: 1.05;
+  margin-bottom: 20px;
+}
+
+/*
+  A narrow measure, centred under the heading.
+
+  36ch, not 34. The sentence measures 387px at this size and 34ch resolved to
+  383.7 — four pixels short, which is what dropped "us!" onto a line of its own.
+  `balance` handles the narrower windows where it genuinely has to wrap, by
+  evening the two lines instead of leaving whatever fits on the first.
+*/
+.contact .contact-inner p {
+  color: #e4e4e7;
+  font-size: 1.125rem;
+  line-height: 1.5;
+  max-width: 36ch;
+  margin: 0 auto 36px;
+  text-wrap: balance;
+  opacity: 0;
+}
+
+/*
+  `inline-block` so the sheen below can be sized to the button rather than to a
+  full-width block, and `isolation` so it composites against the button instead
+  of punching through to the arcs behind.
+*/
+.contact-cta {
+  display: inline-block;
+  position: relative;
+  isolation: isolate;
+  opacity: 0;
+}
+
+/*
+  The highlight, switched on by Contact.tsx the frame the last arc leaves the
+  screen.
+
+  Animated as a `background-position` on a gradient wider than the button, not
+  as a translated child: a child would need `overflow: hidden` on the wrapper to
+  stay inside the pill, and that would clip the button's own 2px hover lift.
+
+  The direction is the part worth stating. With `background-size: 260%`, the
+  offset for `background-position-x: p%` is `-1.6W * p/100`, and the bright band
+  sits 1.3W along the image — so the band is at `1.3W - 1.6W*p/100` in button
+  coordinates. p DECREASING is what moves it left to right; 120% -> -20% carries
+  it from fully off the left edge to fully off the right.
+
+  It holds off-screen for the back half of each cycle so the sweep reads as a
+  repeated pass rather than a strobe.
+*/
+.contact-cta.is-clear::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: 999px;
+  pointer-events: none;
+  background: linear-gradient(
+    100deg,
+    transparent 38%,
+    rgb(255 255 255 / 0.55) 50%,
+    transparent 62%
+  );
+  background-size: 260% 100%;
+  background-repeat: no-repeat;
+  animation: contact-cta-sweep 2.4s linear infinite;
+}
+
+@keyframes contact-cta-sweep {
+  0% {
+    background-position: 120% 0;
+  }
+  45% {
+    background-position: -20% 0;
+  }
+  100% {
+    background-position: -20% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .contact-cta.is-clear::before {
+    animation: none;
+  }
+}
+
+/*
+  A word is one box so a character cannot be left behind on the line above;
+  the spaces BETWEEN words are real text nodes, which is what keeps the two-line
+  break legal.
+*/
+.contact .contact-inner .c-word {
+  display: inline-block;
+}
+
+.contact .contact-inner .c-char {
+  opacity: 0;
+}
+
+/* ==========================================================================
+   FOOTER
+   ========================================================================== */
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 36px var(--pad-x);
+  border-top: 1px solid var(--border);
+}
+
+.footer .brand {
+  font-size: 1rem;
+}
+
+.foot-copy {
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+/* ==========================================================================
+   Responsive — same breakpoints and order as production
+   ========================================================================== */
+
+/* Track-record lede is held on ONE line above 760px, which needs both the
+   nowrap and the released max-width — the 600px cap would otherwise still
+   break it. Dropping this rule makes the section 29px taller. */
+@media (min-width: 761px) {
+  .work .section-head {
+    max-width: none;
+  }
+  .work .lede {
+    max-width: none;
+    white-space: nowrap;
+  }
+}
+
+/*
+  DELIBERATE DIVERGENCE — the one layout rule here that production has and this
+  build does not.
+
+  Production hides the four section links at ≤900px but only shows the
+  hamburger at ≤860px, so between 861 and 900 the header is just the wordmark
+  and "Get in Touch" and there is no way to reach a section at all. The links
+  fit comfortably at those widths — measured, they need ~493px of the ~810px
+  available at 900 — so the rule reads as a leftover from before the hamburger
+  existed at 860.
+
+  Dropping it makes the two breakpoints agree: inline links down to 861, the
+  full-screen panel from 860. Nothing else moves.
+
+  Its counterpart in the 860 block is gone with it. Both were no-ops in the
+  other direction anyway — `.nav-links` is flex at every width, so its children
+  are blockified and `display: block` on them never did anything. Only the
+  `none` had an effect.
+*/
+@media (max-width: 900px) {
+  /* Still a rail; the width formula already narrows with the window. */
+  .pillar {
+    min-height: 380px;
+  }
+  .team-grid {
+    grid-template-columns: 1fr;
+  }
+  /*
+    One column, so the cards no longer share the grid's rules — each one needs
+    its own horizontal stroke back or it has nothing closing it.
+  */
+  .member {
+    border-block-width: 2px;
+  }
+}
+
+@media (max-width: 680px) {
+  .phil-label {
+    font-size: 0.75rem;
+    padding: 8px 12px;
+  }
+}
+
+/*
+  ORDER MATTERS from here down, and it is production's order, not ascending
+  by width. Two pairs of rules are only distinguishable by source position:
+
+  • `.plogo` gets `height: 26px` AND `max-height: 26px` at 560, then
+    `height: 44px` at 620. The later height wins but the max-height is never
+    reset, so it clamps the element back to 26px — which is what production
+    actually renders. Dropping the max-height as "overridden" makes every
+    partner logo cell 18px too tall.
+*/
+@media (max-width: 560px) {
+  .cm-logo img {
+    height: 20px;
+  }
+  .plogo,
+  .plogo img {
+    height: 28px;
+    max-height: 28px;
+  }
+}
+
+@media (max-width: 620px) {
+  .plogo {
+    width: 42%;
+    height: 44px;
+  }
+  .plogo img {
+    max-height: 24px;
+  }
+}
+
+@media (max-width: 760px) {
+  .philv-stage {
+    height: 180vh;
+  }
+  .philv-head {
+    top: clamp(32px, 6vh, 60px);
+  }
+  .philv-stage .philv2-frame {
+    top: clamp(260px, 40vh, 360px);
+    height: min(420px, 52vw);
+  }
+
+  /* Leadership cards become a swipe carousel with dot indicators. */
+  .team-grid {
+    display: flex;
+    grid-template-columns: none;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    gap: 16px;
+    margin: 0 -20px;
+    padding: 4px 20px 8px;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .team-grid::-webkit-scrollbar {
+    display: none;
+  }
+  .team-grid .member {
+    flex: 0 0 100%;
+    scroll-snap-align: center;
+  }
+  .team-dots {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 20px;
+  }
+  .team-dots i {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgb(255 255 255 / 0.26);
+    transition: all 0.3s;
+    cursor: pointer;
+  }
+  .team-dots i.active {
+    background: var(--accent);
+    width: 24px;
+    border-radius: 4px; /* sm — was 5px, off-scale */
+  }
+
+  /*
+    Three columns, not four: the description drops under the title and takes the
+    width the metric was using. Four tracks on a phone gave the sentence about
+    twelve characters a line.
+  */
+  .ws-cards {
+    padding: 0 16px;
+  }
+  .ws-cards {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    column-gap: 16px;
+  }
+  .ws-cards .why-stat {
+    min-height: 0;
+    padding-block: 16px;
+    padding-inline: 16px;
+  }
+  .ws-cards .why-step {
+    grid-row: 1 / span 2;
+    font-size: 2.25rem; /* 36 — 4xl */
+  }
+  .ws-cards .why-stat span {
+    grid-column: 2;
+    grid-row: 1;
+    font-size: 1.25rem; /* 20 — xl */
+  }
+  .ws-cards .why-stat b {
+    grid-column: 3;
+    grid-row: 1;
+    font-size: 1.5rem; /* 24 — 2xl */
+  }
+  .ws-cards .why-stat p {
+    grid-column: 2 / span 2;
+    grid-row: 2;
+    margin-top: 6px;
+    font-size: 0.875rem; /* 14 — sm */
+  }
+
+  /* Tagline wraps to "Built different," / "on purpose." */
+  .ws-tagline {
+    line-height: 1.06;
+  }
+  .ws-tagline .wt2 {
+    display: block;
+  }
+  .ws-tagline .wt2 em {
+    margin-left: 0;
+  }
+
+  /* Partners: marquee returns, both copies of the list in play. */
+  .partners-marquee {
+    overflow: hidden;
+    mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  }
+  /* Back to a single scrolling row, so the ruled grid comes off with it. */
+  .pm-track {
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    width: max-content;
+    gap: 0;
+    margin-inline: 0;
+    padding-inline: 0;
+    border: 0;
+    animation: cmMove 22s linear infinite;
+  }
+  .plogo,
+  .pm-track .plogo:nth-child(-n + 4) {
+    width: 172px;
+    border: 0;
+  }
+  .pm-track .plogo:nth-child(n + 8) {
+    display: flex;
+  }
+  .partners-marquee:hover .pm-track {
+    animation-play-state: paused;
+  }
+}
+
+/* Hamburger + full-screen panel. 860px, NOT a Tailwind breakpoint. */
+@media (max-width: 860px) {
+  .nav-toggle {
+    display: flex;
+  }
+  .nav-links {
+    position: fixed;
+    inset: 0;
+    z-index: 99;
+    flex-direction: column;
+    justify-content: center;
+    gap: 32px;
+    background: rgb(9 9 11 / 0.97);
+    backdrop-filter: blur(18px);
+    transform: translateY(-100%);
+    transition: transform 0.42s cubic-bezier(0.7, 0, 0.2, 1);
+    pointer-events: none;
+  }
+  .nav.open .nav-links {
+    transform: none;
+    pointer-events: auto;
+  }
+  .nav-links a {
+    color: var(--fg);
+    font-family: var(--font-disp);
+    font-size: 1.875rem; /* 28 -> 30 (3xl) */
+  }
+  .nav-links .nav-cta {
+    /* 20px. 1.2rem resolved to 19.2px. */
+    font-size: 1.25rem;
+    /* Wider than the shared --poly-pad-x — this one sits alone in the panel. */
+    padding: 12px 24px;
+    /* Not the bar's 40px button. `height: auto` sized it to 53.76px off the
+       1.2rem line box, so it is pinned to an even 56px instead. */
+    height: 56px;
+    border-color: var(--accent);
+  }
+
+  /* Denser bar, no backdrop-filter: a filter here would make the nav a
+     containing block and break the fixed full-screen panel inside it. Still
+     glass at 0.86, just less of it. */
+  .nav,
+  .nav.scrolled {
+    background: rgb(9 9 11 / 0.86);
+    backdrop-filter: none;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .nav.open {
+    background: transparent;
+    border-bottom-color: transparent;
+  }
+}
+
+/* ==========================================================================
+   Reduced motion — end states, so nothing is left mid-animation
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .hero-cue span {
+    animation: none;
+  }
+  .t-strike.struck::after {
+    transform: scaleX(1);
+  }
+  .t-ink {
+    transition: none;
+  }
+  .philv-head > * {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  .t-strike {
+    max-width: 0;
+    opacity: 0;
+  }
+  .t-add {
+    max-width: 5em;
+    margin-left: 0.32em;
+  }
+  .t-char {
+    opacity: 1;
+    transform: none;
+    filter: none;
+    transition: none;
+  }
+  .pillar-visual * {
+    animation: none !important;
+  }
+  .phil-label {
+    opacity: 1;
+    animation: none;
+  }
+  .wf-col,
+  .tf-badge,
+  .tf-w {
+    transform: none !important;
+    opacity: 1 !important;
+  }
+  .why-stat::before,
+  .why-stat span {
+    transition: none;
+  }
+  /* No travel and no scale: the question sits where it lands. */
+  .wi-rows {
+    opacity: 1;
+    transform: none !important;
+  }
+  .ws-tagline .wt1,
+  .ws-tagline .wt2 {
+    opacity: 1;
+  }
+  .cm-track,
+  .pm-track {
+    animation: none;
+  }
+}
+
+/* ---- polygon button variants ---------------------------------------- */
+/*
+  Primary. White fill, dark label — same shape and same hover as the secondary,
+  which is the whole point: the two now read as one family.
+
+  The spotlight has to invert too. A white glow on a white fill is invisible, so
+  the light variant tints DOWN instead of up.
+*/
+/*
+  Secondary loses its outline: the fill alone carries the shape.
+
+  Done by zeroing the border WIDTH, not by making the colour transparent — a
+  transparent `::before` would still hold the layers apart and leave a 0.96px
+  see-through hairline around the fill. At width 0 the fill covers the whole
+  shape and `::before` is simply hidden underneath it.
+
+  This is now the ONLY button style on the site — primary, secondary and the nav
+  CTA all use it, so nothing is scoped away any more.
+*/
+/*
+  Secondary is now a HOLLOW 2px stroke, so both pseudo layers go transparent and
+  the stroke is drawn by the element itself.
+
+  The ::before/::after pair cannot make an outline: a transparent ::after does
+  not punch through ::before, it just reveals it, so the button would come out a
+  solid slab. A real stroke is available again now that the shape is
+  `border-radius` rather than `clip-path` (see --poly-radius) — clip-path was the
+  only reason the two-layer trick existed.
+
+  `box-shadow: inset`, not `border: 2px`: a real border would add 4px to the box
+  and leave this button taller than the primary sitting beside it. An inset
+  shadow paints inside the existing box, so the two stay the same height.
+
+  On hover ::after covers the whole padding box in white, stroke included, which
+  is what turns it into the solid white pill.
+*/
+.btn-poly,
+.nav-cta {
+  --poly-border-width: 0;
+  --poly-border: transparent;
+  --poly-fill: transparent;
+  box-shadow: inset 0 0 0 2px var(--poly-stroke);
+}
+
+/*
+  `.btn-poly-light` no longer changes anything.
+
+  It was the primary variant — white pill, then solid glass, then BUTTON-01 — and
+  is now the same hollow stroke as everything else, so it carries no declarations.
+  The class is still emitted by PolyButton's `variant="light"` (Hero.tsx,
+  Contact.tsx) and is left in place as a hook; delete the prop in the Production
+  Review pass if it is still unused then.
+
+  BUTTON-01, for the record, was:
+    --poly-border: linear-gradient(180deg, #fff3 0%, #fff29 50%, #fff1a 100%)
+    --poly-fill:   radial-gradient(65% 130% at 50% 50%, #fff24 0%, #fff0d 45%,
+                                   transparent 85%), var(--poly-glass)
+    --poly-border-width: 1px
+  and it needed the fill to stay opaque and the radius to sit on `.btn-poly`.
+*/
+
+
+
+/* Dark label must stay dark on hover — the base rule lifts it to --fg. */
+/* Mirrors the old `.btn-lg`, for the closing contact CTA. */
+.btn-poly-lg {
+  /* Wider than the rest on purpose — the closing CTA. Scaled down with
+     --poly-pad-x so it stays the wider one without becoming twice as wide. */
+  padding: 12px 24px;
+  /* 18px. 1.05rem resolved to 16.8px. */
+  font-size: 1.125rem;
+}
+
+/* ---- nav CTA — same family, sized for the header --------------------- */
+/*
+  Rewritten from a bordered pill to the polygon frame. A real border can't be
+  used here either: `clip-path` would cut its corners off, so the same two-layer
+  pseudo trick applies. The mobile panel override further down only changes
+  font-size and padding, and the shape is percentage-based, so it follows along
+  without extra values.
+*/
+.nav-cta {
+  position: relative;
+  isolation: isolate;
+  /* Shorter than the 48px in-page buttons — see the note on `.btn-poly`. */
+  height: 36px;
+  /*
+    Its own horizontal padding, not the shared `--poly-pad-x`, and not symmetric.
+
+    The arrow is a 16px box drawn from a 24-unit viewBox whose path spans 7…17,
+    so about 4.7px of each side of that box is empty. Equal padding therefore
+    reads unequal — measured, 20.9px of air before the "G" against 24.7px after
+    the arrowhead. 16 left and 12 right lands both on ~16.8px.
+  */
+  padding: 6px 12px 6px 16px;
+  border: 0;
+  /*
+    The pill radius, on the ELEMENT — not 0.
+
+    It was 0 because the shape used to be a `clip-path` polygon: the clip made the
+    corners and the pseudo layers carried the rest, so the element itself needed
+    no radius. Now the stroke is an inset shadow painted by the element, and an
+    element with no radius paints that stroke as a rectangle around a rounded
+    fill. Same trap the hero buttons hit.
+  */
+  border-radius: var(--poly-radius);
+  /* Không stroke, giống secondary trong hero. */
+  --poly-border-width: 0;
+  /* Flex để label và mũi tên nằm cùng hàng, như PolyButton. */
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--fg) !important;
+  transition: color 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.nav-cta::before {
+  inset: 0;
+  /* Hollow, like the hero buttons. The 2px stroke is the inset shadow above. */
+  background: transparent;
+}
+
+/*
+  One fill, both scroll states — same as the hero buttons.
+
+  Do NOT try to blend this into the scrolled bar by setting the background to
+  transparent while leaving `blur` on. It does not read as transparent: the
+  header has its own `backdrop-filter`, which makes it a backdrop root, so a
+  filtered child samples the page content BEHIND the header rather than the
+  header's dark tint. That content is bright, and the CTA came out lighter than
+  the bar — a pale grey chip, the opposite of blending in.
+*/
+.nav-cta::after {
+  inset: var(--poly-border-width);
+  background: transparent;
+  backdrop-filter: none;
+}
+
+.nav-cta::before,
+.nav-cta::after {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  transition: background 0.3s;
+  border-radius: var(--poly-radius);
+}
+
+.nav-cta:hover {
+  color: var(--bg) !important;
+  background: none;
+}
+
+.nav-cta:hover::before {
+  background: #fff;
+}
+
+/*
+  Desktop bar: wordmark left, the four section links centred, the CTA right.
+
+  The strip is stretched across the whole content area (`left: 0; right: 0`
+  resolves against `.nav`'s padding box, so it already sits inside the gutter)
+  and centres its children. The CTA is then taken out of that flex flow and
+  pinned to the right edge — which is what keeps the four links centred on the
+  BAR rather than on "the four links plus a button".
+
+  Everything is scoped to 861px and up. Below that `.nav-links` becomes the
+  fixed full-screen panel and none of this may apply.
+
+  This block lives at the END of the file on purpose. `.nav-cta` is redefined
+  further down by the polygon-button rules with the same specificity, so placed
+  any earlier the `position: absolute` here loses on source order and the CTA
+  stays in the centred flex row.
+
+  `pointer-events` is not optional: the stretched strip paints over the wordmark
+  and would otherwise swallow clicks on it, so the strip is transparent to the
+  pointer and only the links themselves take it back.
+*/
+@media (min-width: 861px) {
+  .nav-links {
+    position: absolute;
+    left: var(--nav-gutter);
+    right: var(--nav-gutter);
+    justify-content: center;
+    pointer-events: none;
+  }
+
+  .nav-links a {
+    pointer-events: auto;
+  }
+
+  .nav-cta {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+}
+
+/*
+  Secondary hover: flips to white with a black label, instantly.
+
+  No transition and no reveal — the colour swaps on the frame the pointer lands.
+  This replaced a cursor-origin radial ripple driven by an `@property`-registered
+  radius; that registration is gone with it, since nothing interpolates any more.
+
+  `backdrop-filter` is switched off on hover too: the fill goes fully opaque
+  white, so blurring what is behind it would only cost GPU for no visible result.
+*/
+.btn-poly::after,
+.nav-cta::after {
+  transition: none;
+}
+
+.btn-poly:hover::after,
+.nav-cta:hover::after {
+  background: #fff;
+  backdrop-filter: none;
+}
+
+/*
+  `.nav-links a.nav-cta`, not just `.nav-cta`: the `.nav-links a` rule that gives
+  the section links their colour/opacity transition scores (0,1,1) and would
+  otherwise outrank a bare `.nav-cta` at (0,1,0), leaving the CTA's label fading
+  over 0.25s while everything else snapped.
+*/
+.btn-poly,
+.nav-links a.nav-cta {
+  transition: none;
+}
+
+.btn-poly:hover,
+.nav-cta:hover {
+  color: var(--bg);
+  /*
+    The stroke has to flip too. `::after` covers the padding box on hover, but the
+    inset shadow is painted with the element's own background — under the pseudo
+    in paint order, yet its outer 2px lands on the anti-aliased pill edge, where a
+    dark ring stayed visible around the white fill.
+  */
+  box-shadow: inset 0 0 0 2px #fff;
+}
+
+/* ---- type scale, stepped ------------------------------------------- */
+/*
+  Fixed steps per breakpoint, replacing the `clamp(min, Nvw, max)` fluid type.
+
+  Fluid type cannot stay on a scale. A size proportional to viewport width lands
+  on fractional px everywhere inside the interpolation band — the hero measured
+  45.6px at 380px wide. Steps hold every size on Tailwind's `text-*` ladder at
+  every width. The trade is that type jumps at a breakpoint instead of gliding.
+
+  Each step is the value the old fluid curve produced at the LOWER edge of its
+  band, rounded DOWN to a Tailwind step. Rounding down matters: `.hero-title` was
+  43.2px on a 360px screen, and the nearest step (48) would have been LARGER than
+  the curve it replaced, so copy that used to fit could start overflowing. Every
+  step here is at or below the old value.
+
+  Breakpoints are Tailwind's own — 640 / 768 / 1024 / 1280 — and are separate from
+  the layout media queries further up. Those drive the nav panel and the grids;
+  moving them would change behaviour rather than type.
+
+  Mobile-first, so this block has to stay AFTER the base declarations it raises.
+*/
+@media (min-width: 640px) {
+  :root {
+    --text-h-hero: 3rem; /* 48 — 5xl */
+    --text-h-section: 2.25rem; /* 36 — 4xl */
+  }
+
+}
+
+@media (min-width: 768px) {
+  :root {
+    --text-h-hero: 3.75rem; /* 60 — 6xl */
+    --text-h-section: 3rem; /* 48 — 5xl */
+  }
+
+  .tf-head {
+    font-size: 2.25rem; /* 36 — 4xl */
+  }
+
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --text-h-hero: 4.5rem; /* 72 — 7xl */
+    --text-h-section: 3.75rem; /* 60 — 6xl */
+  }
+
+  :root {
+    --text-sub: 1.125rem; /* 18 — lg */
+  }
+
+  .lede {
+    font-size: 1.125rem; /* 18 — lg */
+  }
+
+  .phil-label {
+    font-size: 0.875rem; /* 14 — sm */
+  }
+
+  .tf-head {
+    font-size: 3rem; /* 48 — 5xl */
+  }
+
+  .why-step {
+    font-size: 3.75rem; /* 60 — 6xl */
+  }
+
+  .why-stat span {
+    font-size: 1.875rem; /* 30 — 3xl */
+  }
+
+  .why-stat p {
+    font-size: 1.125rem; /* 18 — lg */
+  }
+
+  .why-stat b {
+    font-size: 2.25rem; /* 36 — 4xl */
+  }
+
+}
+
+@media (min-width: 1280px) {
+  :root {
+    --text-h-hero: 6rem; /* 96 — 8xl */
+    --text-h-section: 4.5rem; /* 72 — 7xl */
+  }
+
+  .phil-label {
+    font-size: 1rem; /* 16 — base */
+  }
+
+  .tf-head {
+    font-size: 3.75rem; /* 60 — 6xl */
+  }
+
+  .why-step {
+    font-size: 4.5rem; /* 72 — 7xl */
+  }
+
+  .why-stat span {
+    font-size: 2.25rem; /* 36 — 4xl */
+  }
+
+  .why-stat b {
+    font-size: 3rem; /* 48 — 5xl */
+  }
+
+}
+
+/* ---- width-driven spacing, stepped -------------------------------- */
+/*
+  The `vw` spacing clamps, converted the same way the type was: each step is the
+  old curve's value at the LOWER edge of its band, floored to a multiple of 4 so
+  no step is ever larger than what it replaces.
+
+  The `vh` clamps are deliberately left fluid. They track viewport HEIGHT, so
+  stepping them would need `min-height` queries — and layout that jumps when a
+  window is resized vertically is worse than a fractional value nobody can see.
+
+  Same breakpoints as the type scale, and the same mobile-first requirement: this
+  block has to stay after the base declarations it raises.
+*/
+@media (min-width: 640px) {
+  :root {
+    --pad-x: 32px;
+  }
+
+  .contact .contact-inner {
+    padding: 44px;
+  }
+}
+
+@media (min-width: 768px) {
+  :root {
+    --pad-x: 36px;
+  }
+
+  .ws-field {
+    --wf-tile: 112px;
+    --wf-hole-x: 58%;
+    --wf-hole-y: 50%;
+  }
+
+  .contact .contact-inner {
+    padding: 52px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .nav-links {
+    gap: 20px;
+  }
+
+  .cm-track {
+    gap: 48px;
+  }
+
+  .ws-field {
+    --wf-tile: 144px;
+    --wf-gap: 20px;
+  }
+
+  .wf-cell {
+    padding: 28px;
+  }
+
+  .contact .contact-inner {
+    padding: 68px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .nav-links {
+    gap: 28px;
+  }
+
+  .cm-track {
+    gap: 64px;
+  }
+
+  .ws-field {
+    --wf-tile: 176px;
+    --wf-gap: 24px;
+  }
+
+  .contact .contact-inner {
+    padding: 80px;
+  }
+}
+
+/*
+  One rung past the rest of the ladder, for the field alone.
+
+  Nine 176px tiles and eight 24px gaps come to 1776px, which still runs off both
+  edges at 1280 and 1440 but stops 144px short of each edge on a 1920 screen —
+  and a field that ends is an island, not a field. 208/28 puts it at 2096.
+*/
+@media (min-width: 1536px) {
+  .ws-field {
+    --wf-tile: 208px;
+    --wf-gap: 28px;
+  }
+}
+
+/* ---- desktop gutter --------------------------------------------------- */
+/*
+  120px for the bar AND the page content, from 861px up.
+
+  861 is not a Tailwind breakpoint; it is the nav's own — the width at which the
+  mobile panel gives way to the desktop bar. The gutter has to switch there and
+  nowhere else, because the whole point is that the wordmark, the section copy and
+  the footer sit on one vertical line. Switching the body at 1024 instead would
+  leave 861–1024 with a 120px bar over 36px content.
+
+  This block is LAST on purpose. `--pad-x` is stepped at 640/768 above, and a
+  `min-width: 861px` query also matches at 1024 and beyond — so anything setting
+  --pad-x after this would win at the wider widths and silently split the two
+  apart again. The 48px and 52px steps that used to sit in the 1024 and 1280
+  blocks were removed for the same reason.
+
+  `--nav-gutter` reads from `--pad-x`, so the bar follows without its own override;
+  the one it used to carry here is gone.
+
+  At 1440 this gives a 1200px content column.
+*/
+@media (min-width: 861px) {
+  :root {
+    --pad-x: 120px;
+  }
+}

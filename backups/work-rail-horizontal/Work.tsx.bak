@@ -1,0 +1,22 @@
+import { Reveal } from '@/components/ui';
+import { workContent } from '@/content/work';
+import { Pillars } from './Pillars';
+
+/** Track record: six project columns. The partner logos are their own band. */
+export function Work() {
+  return (
+    <section className="section work" id="work">
+      {/* Inside the stage: the heading holds still with the cards while pinned. */}
+      <Pillars>
+        <div className="section-head">
+          <Reveal as="h2">
+            {workContent.headline.lead} <em>{workContent.headline.emphasis}</em>
+          </Reveal>
+          <Reveal as="p" className="lede">
+            {workContent.lede}
+          </Reveal>
+        </div>
+      </Pillars>
+    </section>
+  );
+}

@@ -1,0 +1,260 @@
+'use client';
+
+import { useCallback, useEffect, useRef } from 'react';
+import { stats, techLogos, techStack, whyContent } from '@/content/why';
+import { useReducedMotion, useScrollScrub } from '@/hooks';
+import { clamp01, cubicOut, seg } from '@/lib/motion';
+
+/*
+  Phase boundaries, as fractions of the stage scroll (0 = the panel has just
+  pinned, 1 = the stage bottom meets the viewport bottom). Quoted from the
+  production sequence and confirmed against the live page at 1440×900.
+
+    0     – 0.55   "Build with …" scrubs down the full tech list
+    0.55  – 0.62   that block and the IDE backdrop fade out together
+    0.62  – 0.70   "Built different,"
+    0.74  – 0.82   "on purpose."
+    0.84  – 0.90   tagline fades out …
+    0.84+ – …      … while the four stat cards stagger in to replace it
+    0.97           the "6 Mo." counter runs
+*/
+const LIST_END = 0.55;
+const BUILD_OUT = [0.55, 0.62] as const;
+const TAG_1 = [0.62, 0.7] as const;
+const TAG_2 = [0.74, 0.82] as const;
+const TAG_OUT = [0.84, 0.9] as const;
+const CARDS_START = 0.84;
+const CARD_STAGGER = 0.025;
+const CARD_SPAN = 0.06;
+const COUNT_AT = 0.97;
+
+/**
+ * Peak opacity of the blurred IDE backdrop behind the tech list.
+ *
+ * 0.40 rather than 0.45, alongside the darker grade on `.ws-bg img`. The two
+ * together are what take the brightest pixel behind the list from 0.16 to 0.055
+ * of relative luminance.
+ */
+const BACKDROP_MAX = 0.4;
+
+/** Below this width the cards sit 2×2 and reveal two, then two. */
+const MOBILE_MAX = 760;
+
+/**
+ * Why Velocity — a single 680vh pinned sequence.
+ *
+ * One panel stays put for the whole run while its contents are swapped by
+ * scroll position: the tech list scrolls through a masked window, hands over
+ * to the two-part tagline, and the tagline in turn is replaced by the four
+ * stat cards. Nothing here animates on a timer; every value is a function of
+ * how far you have scrolled.
+ */
+/** Whether any technology has artwork yet; see `techLogos` in content/why.ts. */
+const HAS_LOGOS = techStack.some((tech) => Boolean(techLogos[tech]));
+
+export function Why() {
+  const stageRef = useRef<HTMLDivElement>(null);
+  const backdropRef = useRef<HTMLDivElement>(null);
+  const buildRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
+  const logoRef = useRef<HTMLDivElement>(null);
+  const taglineRef = useRef<HTMLHeadingElement>(null);
+  const firstHalfRef = useRef<HTMLSpanElement>(null);
+  const secondHalfRef = useRef<HTMLSpanElement>(null);
+  const cardsRef = useRef<HTMLDivElement>(null);
+  const countedRef = useRef(false);
+
+  const reduced = useReducedMotion();
+
+  /** 0 → 6 over 1.2s on a power2.out curve, once. */
+  const runCount = useCallback(() => {
+    if (countedRef.current) return;
+    countedRef.current = true;
+
+    const target = cardsRef.current?.querySelector<HTMLElement>('[data-count]');
+    if (!target) return;
+
+    const end = Number(target.dataset.count ?? 0);
+    const suffix = target.dataset.suffix ?? '';
+    const duration = 1200;
+    const started = performance.now();
+
+    const step = (now: number) => {
+      const t = clamp01((now - started) / duration);
+      // cubic, not quadratic — the count-up runs on GSAP's `power2.out`.
+      target.textContent = `${Math.round(cubicOut(t) * end)}${suffix}`;
+      if (t < 1) requestAnimationFrame(step);
+    };
+
+    requestAnimationFrame(step);
+  }, []);
+
+  const apply = useCallback(
+    (local: number, vh: number) => {
+      const stage = stageRef.current;
+      const list = listRef.current;
+      const build = buildRef.current;
+      const cards = cardsRef.current;
+      if (!stage || !list || !build || !cards) return;
+
+      const span = stage.offsetHeight - vh;
+      const p = span > 0 ? clamp01(local / span) : 0;
+
+      /* ---- Phase 1: the tech list ---------------------------------- */
+      const words = Array.from(list.children) as HTMLElement[];
+      const count = words.length;
+      const lineHeight = words[0]?.offsetHeight ?? 72;
+      const windowHeight = list.parentElement?.offsetHeight ?? lineHeight;
+
+      // Position the active line in the middle of the masked window.
+      const f = clamp01(p / LIST_END) * (count - 1);
+      list.style.transform = `translateY(${windowHeight / 2 - lineHeight / 2 - f * lineHeight}px)`;
+
+      const activeIndex = Math.round(f);
+      words.forEach((word, i) => word.classList.toggle('active', i === activeIndex));
+
+      /*
+        The logo beside the list, matched to the active name by its own
+        `data-tech` rather than by position: only some entries have artwork, so
+        the panel's children do not line up with the words' indices.
+      */
+      const active = techStack[activeIndex];
+      for (const logo of Array.from(logoRef.current?.children ?? []) as HTMLElement[]) {
+        logo.classList.toggle('active', logo.dataset.tech === active);
+      }
+
+      /* ---- Phase 1 → 2 handover ------------------------------------ */
+      const buildVisible = 1 - seg(p, BUILD_OUT[0], BUILD_OUT[1]);
+      build.style.opacity = String(buildVisible);
+
+      if (backdropRef.current) {
+        backdropRef.current.style.opacity = (BACKDROP_MAX * buildVisible).toFixed(3);
+      }
+
+      /* ---- Phases 2 and 3: the tagline, half at a time ------------- */
+      if (firstHalfRef.current) {
+        firstHalfRef.current.style.opacity = String(seg(p, TAG_1[0], TAG_1[1]));
+      }
+      if (secondHalfRef.current) {
+        secondHalfRef.current.style.opacity = String(seg(p, TAG_2[0], TAG_2[1]));
+      }
+
+      /* ---- Phase 4: cards replace the tagline ---------------------- */
+      if (taglineRef.current) {
+        taglineRef.current.style.opacity = String(1 - seg(p, TAG_OUT[0], TAG_OUT[1]));
+      }
+
+      const mobile = window.innerWidth <= MOBILE_MAX;
+      const statCards = Array.from(cards.children) as HTMLElement[];
+
+      statCards.forEach((card, i) => {
+        const from = mobile ? (i < 2 ? CARDS_START : 0.92) : CARDS_START + i * CARD_STAGGER;
+        const shown = seg(p, from, from + CARD_SPAN);
+        card.style.opacity = String(shown);
+        card.style.transform = `translateY(${(1 - shown) * 36}px)`;
+      });
+
+      if (p >= COUNT_AT) runCount();
+    },
+    [runCount],
+  );
+
+  useScrollScrub(stageRef, apply, { catchUp: 0.4, enabled: !reduced });
+
+  /*
+    Reduced motion: land on the end state.
+
+    Production returns early here and never touches the cards, which leaves
+    them at the stylesheet's `opacity: 0` — the four stats are invisible for
+    anyone with the OS setting on. That is a bug, not a design decision, so
+    this build reveals them instead. It is the one behaviour here that is
+    deliberately not a copy.
+  */
+  useEffect(() => {
+    if (!reduced) return;
+
+    const words = Array.from(listRef.current?.children ?? []) as HTMLElement[];
+    words.at(-1)?.classList.add('active');
+
+    for (const card of Array.from(cardsRef.current?.children ?? []) as HTMLElement[]) {
+      card.style.opacity = '1';
+      card.style.transform = 'none';
+    }
+    runCount();
+  }, [reduced, runCount]);
+
+  return (
+    <div className="why-stage" id="why" ref={stageRef}>
+      <div className="ws-bg" ref={backdropRef}>
+        {/* Blurred IDE screenshot. Decorative — deliberately unlabelled. */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={whyContent.backdrop} alt="" />
+      </div>
+
+      <div className="why-sticky">
+        <span className="kicker ws-kicker">{whyContent.kicker}</span>
+
+        <div className="ws-stack" ref={buildRef}>
+          <div className="ws-build">
+            <span className="tr-label">{whyContent.stackLabel}</span>
+            <div className="tr-listbox">
+              <div className="tr-list" ref={listRef}>
+                {techStack.map((tech) => (
+                  <span className="tr-word" key={tech}>
+                    {tech}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            {/*
+              The active name's logo, a third item in this row rather than a
+              sibling of it — `.ws-stack` is a column, so one level out put the
+              logo UNDER the list instead of beside it.
+
+              Every logo is rendered up front and swapped by opacity; mounting
+              on demand would fetch the file at the moment it is needed and
+              blink on the first pass. Rendered only when at least one exists,
+              so an empty `techLogos` leaves the row exactly as it was.
+            */}
+            {HAS_LOGOS && (
+              <div className="tr-logo" aria-hidden="true" ref={logoRef}>
+                {techStack.map((tech) =>
+                  techLogos[tech] ? (
+                    /* eslint-disable-next-line @next/next/no-img-element */
+                    <img key={tech} data-tech={tech} src={techLogos[tech]} alt="" />
+                  ) : null,
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+
+        <h2 className="ws-tagline" ref={taglineRef}>
+          <span className="wt1" ref={firstHalfRef}>
+            {whyContent.headline.lead}
+          </span>
+          <span className="wt2" ref={secondHalfRef}>
+            <em>&nbsp;{whyContent.headline.emphasis}</em>
+          </span>
+        </h2>
+
+        <div className="why-grid ws-cards" ref={cardsRef}>
+          {stats.map((stat) => (
+            <div className="why-stat" key={stat.id}>
+              {stat.countTo ? (
+                <b data-count={stat.countTo} data-suffix={stat.countSuffix}>
+                  {stat.value}
+                </b>
+              ) : (
+                <b>{stat.value}</b>
+              )}
+              <span>{stat.label}</span>
+              <p>{stat.description}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
