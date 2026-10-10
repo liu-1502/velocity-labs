@@ -200,7 +200,23 @@ export const caseStudies: CaseStudy[] = [
         {
           src: '/assets/work/yuzu/transaction-history.png',
           alt: 'Transaction history — earnings tab listing stakes and redemptions with amount, fee and status',
-          ratio: '1782 / 856',
+          ratio: '2000 / 1422',
+          /*
+            Same story as `portfolio.png` on Digital Collectibles, and the same
+            answer. This is a partial capture — 1782 x 856, AR 2.08 — standing
+            beside `earn.webp` at AR 1.41, and it was declared at its own ratio
+            so nothing would be cropped off it. That made the frame a letterbox
+            next to a landscape, and the row came out ragged.
+
+            A frame in a row has to be the same shape as the frame beside it.
+            The row keeps its ratio and the shot is CONTAINED in it: the row is
+            square again and not a pixel of the capture is lost, it simply shows
+            smaller with the frame's own surface above and below.
+
+            Replacing it with a full 2000 x 1422 export fixes it properly, and
+            then the `fit` line comes out.
+          */
+          fit: 'contain',
         },
       ],
       /*
