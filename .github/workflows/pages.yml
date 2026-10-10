@@ -1,0 +1,88 @@
+name: Deploy to GitHub Pages
+
+# Every push to main rebuilds the site. `workflow_dispatch` is there so a
+# deploy can be re-run from the Actions tab without an empty commit.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One deploy at a time, and a newer push does not cancel a deploy already
+# uploading — cancelling mid-publish is how Pages ends up serving half a site.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      - name: Build
+        env:
+          # Pages serves a project repo from /<repo>, so the build needs its
+          # own prefix. next.config.ts reads this; it is unset locally, which
+          # is what keeps `npm run dev` on `/`.
+          NEXT_PUBLIC_BASE_PATH: /velocity-labs
+        run: npm run build
+
+      # ---------------------------------------------------------------
+      # The one thing `basePath` does not do for us.
+      #
+      # Next rewrites its own URLs — /_next/*, next/link, next/image — and
+      # nothing else. This site has 7 absolute `url('/assets/…')` in CSS and 73
+      # absolute '/assets/…' strings in src/content/*.ts that reach the page as
+      # plain <img src>. None of those are Next's to rewrite, so all 80 would
+      # 404 under /velocity-labs/.
+      #
+      # Rewriting them at the source would mean a helper around every one of
+      # them AND a build step for the CSS, which CSS cannot express — `url()`
+      # takes no custom property. Doing it here instead keeps the source on
+      # absolute paths, which is what local dev and any root-served deploy
+      # (Vercel, a custom domain) both want.
+      #
+      # The match is deliberately narrow: only /assets/, only where it is
+      # preceded by a quote or `url(`, so nothing else that happens to contain
+      # the string is touched.
+      # ---------------------------------------------------------------
+      - name: Prefix absolute asset URLs
+        run: |
+          before=$(grep -roE '["'"'"'(]/assets/' out | wc -l | tr -d ' ')
+          find out -type f \( -name '*.html' -o -name '*.js' -o -name '*.css' -o -name '*.txt' \) \
+            -exec sed -i'' -E 's#(["'"'"'(])/assets/#\1/velocity-labs/assets/#g' {} +
+          after=$(grep -roE '["'"'"'(]/assets/' out | wc -l | tr -d ' ')
+          echo "rewrote $before absolute asset references, $after left"
+          test "$after" -eq 0
+
+      # Pages runs the output through Jekyll unless told not to, and Jekyll
+      # drops every directory that starts with an underscore — which is all of
+      # /_next. Without this the site deploys with no JS and no CSS.
+      - run: touch out/.nojekyll
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: out
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

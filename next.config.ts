@@ -3,9 +3,28 @@ import type { NextConfig } from 'next';
 const nextConfig: NextConfig = {
   reactStrictMode: true,
 
-  // Static-export friendly: the site has no server-side data dependencies.
-  // Remove `output` if you later add Route Handlers / server actions.
-  // output: 'export',
+  /*
+    Static export, for GitHub Pages.
+
+    The site has no server-side data dependencies — no Route Handlers, no
+    middleware, no server actions — and `/work/[slug]` already ships
+    `generateStaticParams` with `dynamicParams = false`, so every page it can
+    serve is known at build time. Drop `output` again the moment any of that
+    stops being true.
+  */
+  output: 'export',
+
+  /*
+    Pages serves a project repo from a sub-path, `/velocity-labs`, so the build
+    has to know its own prefix. Empty locally, set by the workflow in CI, which
+    keeps `npm run dev` on `/` where it has always been.
+
+    `trailingSlash` because Pages has no rewrite layer: without it `/work/yuzu`
+    is a 404 and only `/work/yuzu.html` resolves.
+  */
+  basePath: process.env.NEXT_PUBLIC_BASE_PATH || undefined,
+  assetPrefix: process.env.NEXT_PUBLIC_BASE_PATH || undefined,
+  trailingSlash: true,
 
   images: {
     // All imagery ships from /public. Add remote hosts here if that changes.
