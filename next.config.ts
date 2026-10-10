@@ -35,6 +35,13 @@ const nextConfig: NextConfig = {
     dirs: ['src', 'scripts'],
   },
 
+  /*
+    IGNORED UNDER `output: 'export'`, and Next warns about it on every build.
+    A static export is a folder of files; there is no server to attach headers
+    to, so on GitHub Pages the caching below is whatever Pages decides. It is
+    kept because it is correct wherever this is served by a real server —
+    Vercel, a Node host, a CDN with a config of its own.
+  */
   async headers() {
     return [
       {
