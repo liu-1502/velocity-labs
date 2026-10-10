@@ -69,7 +69,7 @@ export const projects: Project[] = [
     logo: { src: '/assets/brand/yuzu-icon.png', alt: 'Yuzu Money' },
     shot: {
       src: '/assets/work/yuzu.webp',
-      alt: 'Yuzu Money — dashboard with total balance, savings and growth chart beside the transaction history and syzUSD metrics screens',
+      alt: 'Yuzu Money — the Yuzu mark over the dashboard: total balance, savings and a growth chart, with the transaction history and the Earn screen either side',
     },
   },
   {
